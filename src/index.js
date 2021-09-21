@@ -1,8 +1,5 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import "./index.css";
+import App from "./App";
 
-ReactDOM.render(
-  <h1>Hi there, this is the first Graph App Instance</h1>,
-  document.getElementById("root")
-);
+ReactDOM.render(<App />, document.getElementById("root"));
