@@ -1,8 +1,9 @@
-.card {
+.sidelayout {
+  margin: 15px 0;
   height: calc(100% - 30px);
-  margin: 15px 0 15px 5px;
-  border-radius: 0.8rem;
+}
 
+.card-sidelayout {
   &-body {
     display: flex;
     align-items: center;
@@ -11,5 +12,6 @@
 
   .list-group {
     width: 100%;
+    text-align: center;
   }
 }

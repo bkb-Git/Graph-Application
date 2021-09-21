@@ -1,0 +1,16 @@
+.content-layout {
+  margin: 15px 0;
+  height: calc(100% - 30px);
+}
+
+.card-content-layout {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.add-graph-button {
+  img {
+    width: 3rem;
+  }
+}
