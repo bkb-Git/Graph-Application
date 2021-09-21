@@ -1,0 +1,15 @@
+.card {
+  height: calc(100% - 30px);
+  margin: 15px 0 15px 5px;
+  border-radius: 0.8rem;
+
+  &-body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .list-group {
+    width: 100%;
+  }
+}
