@@ -1,0 +1,31 @@
+.graph-card {
+  box-sizing: border-box;
+  height: calc(50% - 1.5rem);
+  min-width: calc(50% - 10px) !important;
+  margin-right: 5px;
+
+  &--empty {
+    max-width: calc(50% - 5px) !important;
+    &__add-graph-button {
+      border-radius: 50% !important;
+      width: 3rem;
+      height: 3rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      i {
+        width: 3rem;
+      }
+    }
+  }
+
+  &__actions {
+    position: absolute;
+    width: 25%;
+    right: 0;
+    padding: 5px 5px 0 0;
+    display: flex;
+    justify-content: flex-end;
+  }
+}

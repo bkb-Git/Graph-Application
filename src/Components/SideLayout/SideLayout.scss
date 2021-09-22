@@ -1,10 +1,14 @@
 .sidelayout {
   margin: 15px 0;
   height: calc(100% - 30px);
+  margin-top: 15px !important;
 }
 
-.card-sidelayout {
-  &-body {
+.sidelayout__card {
+  height: 100%;
+  border-radius: 0.8rem;
+
+  &__body {
     display: flex;
     align-items: center;
     justify-content: center;
