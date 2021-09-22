@@ -54,7 +54,9 @@ const ContentLayout = () => {
 
   return (
     <div className={renderContentLayoutClassList()}>
-      <div className={renderContentClassList()}>{renderContent()}</div>
+      <div id="myModal" className={renderContentClassList()}>
+        {renderContent()}
+      </div>
     </div>
   );
 };

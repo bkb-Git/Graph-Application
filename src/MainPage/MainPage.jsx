@@ -15,6 +15,7 @@ const MainPage = () => {
   return (
     <MainLayout>
       <div
+        id="main-page-layout"
         className="row gx-3 main-page__container"
         style={{ height: "inherit" }}
       >

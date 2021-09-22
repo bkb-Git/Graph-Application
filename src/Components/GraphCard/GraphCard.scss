@@ -38,6 +38,24 @@
     flex: 5;
     display: flex;
     justify-content: flex-end;
+
+    &__button--fullscreen {
+      color: #000;
+      font-weight: bolder;
+      opacity: 0.75;
+      width: 1em;
+      height: 1em;
+      box-sizing: content-box;
+      padding: 0.25em 0.25em !important;
+      margin-right: 5px;
+      display: flex !important;
+      justify-content: center;
+      align-items: center;
+
+      &:hover {
+        opacity: 1;
+      }
+    }
   }
 
   &__badge {

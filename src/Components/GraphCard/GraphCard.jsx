@@ -47,8 +47,14 @@ const GraphCard = (props) => {
         <>
           <button
             type="button"
+            className="btn graph-card__actions__button--fullscreen"
+          >
+            <i class="bi bi-fullscreen" />
+          </button>
+          <button
+            type="button"
             onClick={handleDeleteGraph}
-            class="btn-close"
+            className="btn-close"
             aria-label="Close"
           />
         </>
