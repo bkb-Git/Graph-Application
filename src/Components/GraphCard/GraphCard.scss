@@ -1,8 +1,16 @@
+@import "../../style/global_styles.scss";
+
 .graph-card {
   box-sizing: border-box;
   height: calc(50% - 1.5rem);
   min-width: calc(50% - 10px) !important;
   margin-right: 5px;
+  padding: 0 !important;
+  transition: 0.3s box-shadow ease-in;
+
+  &:hover {
+    box-shadow: $box-shadow;
+  }
 
   &--empty {
     max-width: calc(50% - 5px) !important;
@@ -20,12 +28,19 @@
     }
   }
 
+  &__header {
+    padding: 0.5rem 0.5rem;
+    display: flex;
+    justify-content: space-between;
+  }
+
   &__actions {
-    position: absolute;
-    width: 25%;
-    right: 0;
-    padding: 5px 5px 0 0;
+    flex: 5;
     display: flex;
     justify-content: flex-end;
+  }
+
+  &__badge {
+    flex: 1;
   }
 }

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Switch, Route, useHistory } from "react-router-dom";
 
 import GraphView from "../GraphView";
@@ -9,8 +9,11 @@ const ContentLayout = () => {
   const [graphAdded, setGraphAdded] = useState(false);
   const history = useHistory();
 
-  const handleAddGraph = () => {
+  useEffect(() => {
     setGraphAdded(true);
+  }, [history.location]);
+
+  const handleAddGraph = () => {
     history.push("/default");
   };
 

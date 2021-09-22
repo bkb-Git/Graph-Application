@@ -1,7 +1,7 @@
 import "./GraphCard.scss";
 
 const GraphCard = (props) => {
-  const { data, graphList, addGraph, setGraphList } = props;
+  const { data, graphList, addGraph, setGraphList, category } = props;
 
   const handleAddGraphHere = () => {
     const modifiedGraphList = graphList;
@@ -41,27 +41,30 @@ const GraphCard = (props) => {
     );
   };
 
-  const renderCardActions = () => {
+  const renderCardHeader = () => {
+    const renderCardActions = () => {
+      return (
+        <>
+          <button
+            type="button"
+            onClick={handleDeleteGraph}
+            class="btn-close"
+            aria-label="Close"
+          />
+        </>
+      );
+    };
+
     return (
-      <>
-        <button
-          type="button"
-          onClick={handleDeleteGraph}
-          class="btn-close"
-          aria-label="Close"
-        />
-      </>
+      <div class="card-header graph-card__header">
+        <span class="badge graph-card__badge bg-primary ">{category}</span>
+        <div className="graph-card__actions">{renderCardActions()}</div>
+      </div>
     );
   };
 
   const renderGraphCard = () => {
-    return (
-      <div className="col card graph-card">
-        <div className="graph-card__actions">{renderCardActions()}</div>
-        <h1 className="h1">{data.country}</h1>
-        Card with Data
-      </div>
-    );
+    return <div className="col card graph-card">{renderCardHeader()}</div>;
   };
 
   return <>{data.country ? renderGraphCard() : renderEmptyGraphCard()}</>;

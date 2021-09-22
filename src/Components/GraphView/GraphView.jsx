@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import GraphCard from "../GraphCard";
 
@@ -7,6 +7,10 @@ import "./GraphView.scss";
 const GraphView = () => {
   const [graphList, setGraphList] = useState([{ id: 1 }]);
   const { option } = useParams();
+
+  useEffect(() => {
+    setGraphList([{ id: 1 }]);
+  }, [option]);
 
   const handleAddGraph = () => {
     if (graphList.length < 4) {
