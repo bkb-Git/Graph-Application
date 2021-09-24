@@ -8,6 +8,7 @@
     "@testing-library/user-event": "^12.8.3",
     "bootstrap": "^5.1.1",
     "bootstrap-icons": "^1.5.0",
+    "d3": "^7.0.3",
     "graphql": "^15.6.0",
     "graphql-request": "^3.5.0",
     "react": "^17.0.2",
