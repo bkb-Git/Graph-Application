@@ -1,16 +1,28 @@
+import { useEffect, useState } from "react";
+
 import MainLayout from "../Components/MainLayout";
 import ContentLayout from "../Components/ContentLayout";
 import SideLayout from "../Components/SideLayout";
 
+import { WBRegions } from "../Constants/worldBankAPIs";
 import "./MainPage.scss";
 
 const MainPage = () => {
-  const data = [
-    { name: "Item-1", id: 1 },
-    { name: "Item-2", id: 2 },
-    { name: "Item-3", id: 3 },
-    { name: "Item-4", id: 4 },
-  ];
+  const [sideOptions, setSideOptions] = useState([]);
+  const [fetched, setFetched] = useState(false);
+
+  useEffect(() => {
+    fetch(WBRegions)
+      .then((response) => response.json())
+      .then((data) => {
+        setSideOptions(data[1]);
+        return setFetched(true);
+      });
+  }, []);
+
+  const sideOptionsList = sideOptions.map((option) => {
+    return { name: option.name, id: option.code };
+  });
 
   return (
     <MainLayout>
@@ -19,8 +31,8 @@ const MainPage = () => {
         className="row gx-3 main-page__container"
         style={{ height: "inherit" }}
       >
-        <SideLayout list={data} />
-        <ContentLayout />
+        <SideLayout fetched list={sideOptionsList} />
+        <ContentLayout defaultId={fetched && sideOptionsList[0].id} />
       </div>
     </MainLayout>
   );

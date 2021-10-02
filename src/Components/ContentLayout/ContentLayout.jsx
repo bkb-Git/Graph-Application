@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { Switch, Route, useHistory } from "react-router-dom";
 
-import GraphView from "../GraphView";
+import GraphViews from "../GraphViews";
 
 import "./ContentLayout.scss";
 
-const ContentLayout = () => {
+const ContentLayout = (props) => {
+  const { defaultId } = props;
   const [graphAdded, setGraphAdded] = useState(false);
   const history = useHistory();
 
@@ -14,7 +15,7 @@ const ContentLayout = () => {
   }, [history.location]);
 
   const handleAddGraph = () => {
-    history.push("/default");
+    history.push(`/${defaultId}`);
   };
 
   const renderAddGraphButton = () => {
@@ -47,16 +48,14 @@ const ContentLayout = () => {
     return (
       <Switch>
         <Route exact path="/" render={() => renderAddGraphButton()} />
-        <Route exact path="/:option" component={GraphView} />
+        <Route exact path="/:option" component={GraphViews} />
       </Switch>
     );
   };
 
   return (
     <div className={renderContentLayoutClassList()}>
-      <div id="myModal" className={renderContentClassList()}>
-        {renderContent()}
-      </div>
+      <div className={renderContentClassList()}>{renderContent()}</div>
     </div>
   );
 };
