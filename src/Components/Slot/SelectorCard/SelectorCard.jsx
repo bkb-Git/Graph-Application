@@ -1,5 +1,6 @@
 import { indicators } from "../../../Constants/indicators";
 import { Country, Indicator } from "../../../Constants/keywords";
+import Loader from "../../Loader";
 
 const SelectorCard = (props) => {
   const {
@@ -13,19 +14,6 @@ const SelectorCard = (props) => {
   const { gdpTotalinUSD, totalPopulation } = indicators;
 
   const progressStep = { 1: "33", 2: "66" };
-
-  const renderLoading = () => {
-    return (
-      <div
-        class="d-flex text-primary justify-content-center align-items-center"
-        style={{ height: "100%" }}
-      >
-        <div class="spinner-border" role="status">
-          <span class="visually-hidden">Loading...</span>
-        </div>
-      </div>
-    );
-  };
 
   const countrySelector = () => {
     if (regionFetched) {
@@ -49,7 +37,7 @@ const SelectorCard = (props) => {
         </div>
       );
     }
-    return renderLoading();
+    return <Loader />;
   };
 
   const indicatorSelector = () => {
@@ -90,7 +78,7 @@ const SelectorCard = (props) => {
       );
     }
 
-    return renderLoading();
+    return <Loader />;
   };
 
   const renderSelector = () => {

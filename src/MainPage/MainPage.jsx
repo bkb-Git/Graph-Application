@@ -4,7 +4,7 @@ import MainLayout from "../Components/MainLayout";
 import ContentLayout from "../Components/ContentLayout";
 import SideLayout from "../Components/SideLayout";
 
-import { WBRegions } from "../Constants/worldBankAPIs";
+import { WBRegions } from "../WorldBank/worldBankAPIs";
 import "./MainPage.scss";
 
 const MainPage = () => {

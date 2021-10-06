@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useHistory } from "react-router-dom";
-import { WBCountriesByRegion } from "../../Constants/worldBankAPIs";
+import { WBCountriesByRegion } from "../../WorldBank/worldBankAPIs";
 import usePrevious from "../../libs/helpers/usePrevious";
 import Slot from "../Slot";
 

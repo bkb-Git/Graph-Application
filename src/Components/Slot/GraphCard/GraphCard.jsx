@@ -11,12 +11,17 @@ import {
   valueDescendingOrder,
 } from "../../../Constants/keywords";
 
-import { WBIndicatorByCountry } from "../../../Constants/worldBankAPIs";
+import { WBIndicatorByCountry } from "../../../WorldBank/worldBankAPIs";
 import D3Graph from "./D3Graph";
+import Loader from "../../Loader";
 
 const GraphCard = (props) => {
-  const { deleteCard, data, graphCardId, slotDimensions } = props;
-  const [fetched, setFetched] = useState(false);
+  const { deleteCard, data, graphCardId } = props;
+  const [fetched, setFetched] = useState({
+    dataFetched: false,
+    graphCardDimensionsFetched: false,
+    cardHeaderDimensionsFetched: false,
+  });
   const [modalOpen, setModalOpen] = useState(false);
   const [graphData, setGraphData] = useState([]);
   const [graphCardDimensions, setGraphCardDimensions] = useState({
@@ -30,6 +35,7 @@ const GraphCard = (props) => {
 
   const { countryCode, indicator, countryTitle, indicatorTitle } = data;
 
+  // Fetch data
   useEffect(() => {
     fetch(WBIndicatorByCountry(countryCode, indicator))
       .then((response) => response.json())
@@ -44,7 +50,7 @@ const GraphCard = (props) => {
               };
             })
           );
-          return setFetched(true);
+          return setFetched({ dimensionsFetched: false, dataFetched: true });
         }
       })
       .catch((error) => {
@@ -52,8 +58,42 @@ const GraphCard = (props) => {
       });
   }, [countryCode, indicator]);
 
+  //Retrieve Graph card dimensions
   useEffect(() => {
-    if (fetched) {
+    const graphCard = document.getElementById(graphCardId);
+
+    if (modalOpen) {
+      if (!fetched.graphCardDimensionsFetched) {
+        const modal = document.getElementById(`modal-${graphCardId}`)
+          .childNodes[0];
+
+        return setTimeout(() => {
+          const width = modal.getBoundingClientRect().width;
+          const height = modal.getBoundingClientRect().height;
+          setGraphCardDimensions({
+            width,
+            height,
+          });
+          return setFetched({ ...fetched, graphCardDimensionsFetched: true });
+        }, 200);
+      }
+    } else if (!fetched.graphCardDimensionsFetched) {
+      return setTimeout(() => {
+        const width = graphCard.getBoundingClientRect().width;
+        const height = graphCard.getBoundingClientRect().height;
+
+        setGraphCardDimensions({
+          width,
+          height,
+        });
+        return setFetched({ ...fetched, graphCardDimensionsFetched: true });
+      }, 200);
+    }
+  }, [graphCardId, modalOpen, fetched]);
+
+  //Set tooltip for action buttons
+  useEffect(() => {
+    if (fetched.dataFetched && !modalOpen) {
       const prevButton = document.getElementById(
         `${graphCardId}-button-nav-prev`
       );
@@ -66,6 +106,7 @@ const GraphCard = (props) => {
           title: "Previous",
           animation: true,
           placement: "left",
+          delay: { show: 50, hide: 100 },
           trigger: "hover focus",
         });
 
@@ -73,84 +114,178 @@ const GraphCard = (props) => {
           title: "Next",
           animation: true,
           placement: "right",
+          delay: { show: 50, hide: 100 },
           trigger: "hover focus",
         });
       };
 
-      const cardHeaderEl = document.getElementById(`cardHeader-${graphCardId}`);
-
-      setGraphCardDimensions({
-        width: slotDimensions.slotWidth,
-        height: slotDimensions.slotHeight - cardHeaderEl.offsetHeight,
-      });
-
       return buttonTooltip();
     }
-  }, [fetched, graphCardId, slotDimensions, setGraphCardDimensions]);
-
-  useEffect(() => {}, [graphCardId]);
-
-  const handleGraphNavigation = (e) => {
-    const navButtonClicked = e.currentTarget.id;
-    const nextButton = `${graphCardId}-button-nav-next`;
-    const prevButton = `${graphCardId}-button-nav-prev`;
-
-    if (navButtonClicked === nextButton) {
-      if (orderData.page < 2) {
-        return setOrderData((prev) => ({ ...orderData, page: prev.page + 1 }));
-      }
-    } else if (navButtonClicked === prevButton) {
-      if (orderData.page > 0) {
-        return setOrderData((prev) => ({ ...orderData, page: prev.page - 1 }));
-      }
-    }
-  };
-
-  const handleToggleFullscreen = (e) => {
-    const graphModal = new Modal(document.getElementById("myModal"), {
-      backdrop: "static",
-    });
-
-    setOrderData({ ...orderData, page: 3 });
-
-    setModalOpen(true);
-
-    return graphModal.show();
-  };
+  }, [fetched, graphCardId, modalOpen]);
 
   const renderCardActions = () => {
+    const handleToggleFullscreenOff = (e) => {
+      setOrderData({ ...orderData, page: 0 });
+      setFetched({
+        ...fetched,
+        graphCardDimensionsFetched: false,
+        cardHeaderDimensionsFetched: false,
+      });
+      return setModalOpen(false);
+    };
+
+    const handleToggleFullscreenOn = (e) => {
+      const graphModal = new Modal(
+        document.getElementById(`modal-${graphCardId}`),
+        {
+          backdrop: "static",
+        }
+      );
+
+      setOrderData({ ...orderData, page: 3 });
+      setFetched({
+        ...fetched,
+        graphCardDimensionsFetched: false,
+        cardHeaderDimensionsFetched: false,
+      });
+
+      setModalOpen(true);
+
+      return graphModal.show();
+    };
+
+    const handleGraphNavigation = (e) => {
+      const navButtonClicked = e.currentTarget.id;
+      const nextButton = `${graphCardId}-button-nav-next`;
+      const prevButton = `${graphCardId}-button-nav-prev`;
+
+      if (navButtonClicked === nextButton) {
+        if (orderData.page < 2) {
+          return setOrderData((prev) => ({
+            ...orderData,
+            page: prev.page + 1,
+          }));
+        }
+      } else if (navButtonClicked === prevButton) {
+        if (orderData.page > 0) {
+          return setOrderData((prev) => ({
+            ...orderData,
+            page: prev.page - 1,
+          }));
+        }
+      }
+    };
+
+    const handleSetOrder = (e) => {
+      const value = e.target.attributes.value.value;
+
+      return setOrderData({ ...orderData, order: value });
+    };
+
+    const renderNavButtons = () => {
+      if (!modalOpen) {
+        return (
+          <>
+            <button
+              type="button"
+              id={`${graphCardId}-button-nav-prev`}
+              onClick={(e) => handleGraphNavigation(e)}
+              className="btn graph-card__actions__button graph-card__actions__button--pageNav"
+            >
+              <i class="bi bi-arrow-left-square-fill" />
+            </button>
+            <button
+              type="button"
+              id={`${graphCardId}-button-nav-next`}
+              onClick={(e) => handleGraphNavigation(e)}
+              className="btn graph-card__actions__button graph-card__actions__button--pageNav"
+            >
+              <i class="bi bi-arrow-right-square-fill" />
+            </button>
+          </>
+        );
+      }
+      return null;
+    };
+
+    const renderFullScreenButton = () => {
+      if (!modalOpen) {
+        return (
+          <button
+            type="button"
+            onClick={handleToggleFullscreenOn}
+            className="btn graph-card__actions__button graph-card__actions__button--fullscreen"
+          >
+            <i class="bi bi-fullscreen" />
+          </button>
+        );
+      }
+    };
+
+    const renderCancelButton = () => {
+      if (!modalOpen) {
+        return (
+          <button
+            type="button"
+            className="btn graph-card__actions__button graph-card__actions__button--close"
+            onClick={modalOpen ? handleToggleFullscreenOff : deleteCard}
+          >
+            <i class="bi bi-x-lg" />
+          </button>
+        );
+      }
+      return (
+        <button
+          type="button"
+          class="btn-close"
+          onClick={handleToggleFullscreenOff}
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        />
+      );
+    };
+
+    const renderOrderButton = () => {
+      return (
+        <div className="dropdown">
+          <button
+            type="button"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+            id={`${graphCardId}-button-order`}
+            className="btn btn-primary graph-card__actions__button  graph-card__actions__button--order"
+          >
+            <i class="bi bi-bar-chart-fill"></i>
+          </button>
+          <ul
+            className="dropdown-menu dropdown-menu-dark dropdown-menu-start"
+            aria-labelledby={`${graphCardId}-button-order`}
+          >
+            <li
+              className="dropdown-item"
+              value={dateAscendingOrder}
+              onClick={(e) => handleSetOrder(e)}
+            >
+              Ascending Order
+            </li>
+            <li
+              className="dropdown-item"
+              value={dateDescendingOrder}
+              onClick={(e) => handleSetOrder(e)}
+            >
+              Descending Order
+            </li>
+          </ul>
+        </div>
+      );
+    };
+
     return (
       <>
-        <button
-          type="button"
-          id={`${graphCardId}-button-nav-prev`}
-          onClick={(e) => handleGraphNavigation(e)}
-          className="btn graph-card__actions__button graph-card__actions__button--pageNav"
-        >
-          <i class="bi bi-arrow-left-square-fill" />
-        </button>
-        <button
-          type="button"
-          id={`${graphCardId}-button-nav-next`}
-          onClick={(e) => handleGraphNavigation(e)}
-          className="btn graph-card__actions__button graph-card__actions__button--pageNav"
-        >
-          <i class="bi bi-arrow-right-square-fill" />
-        </button>
-        <button
-          type="button"
-          onClick={handleToggleFullscreen}
-          className="btn graph-card__actions__button graph-card__actions__button--fullscreen"
-        >
-          <i class="bi bi-fullscreen" />
-        </button>
-        <button
-          type="button"
-          className="btn graph-card__actions__button graph-card__actions__button--close"
-          onClick={deleteCard}
-        >
-          <i class="bi bi-x-lg" />
-        </button>
+        {renderOrderButton()}
+        {renderNavButtons()}
+        {renderFullScreenButton()}
+        {renderCancelButton()}
       </>
     );
   };
@@ -168,53 +303,68 @@ const GraphCard = (props) => {
     );
   };
 
-  const renderContentLoading = () => {
+  const renderGraph = () => {
     return (
-      <div
-        class="d-flex text-primary justify-content-center align-items-center"
-        style={{ height: "100%" }}
-      >
-        <div class="spinner-border" role="status">
-          <span class="visually-hidden">Loading...</span>
-        </div>
-      </div>
+      <D3Graph
+        dataForD3={graphData}
+        indicatorInfo={indicator}
+        inModal={modalOpen}
+        orderData={orderData}
+        id={graphCardId}
+        fetchedObj={{ fetched, setFetched }}
+        dimensions={graphCardDimensions}
+        axisLabels={{
+          xAxisLabel: "date",
+          yAxisLabel: "value",
+          yValue: "value",
+        }}
+      />
     );
   };
 
-  const renderGraph = (inModal) => {
+  const renderCardContent = () => {
     return (
       <>
         {renderCardHeader()}
-        <D3Graph
-          dataForD3={graphData}
-          indicatorInfo={indicator}
-          inModal={inModal}
-          orderData={orderData}
-          dimensions={graphCardDimensions}
-          axisLabels={{
-            xAxisLabel: "date",
-            yAxisLabel: "value",
-            yValue: "value",
-          }}
-        />
+        {fetched.graphCardDimensionsFetched ? renderGraph() : <Loader />}
       </>
     );
   };
 
   const renderModal = () => {
     return (
-      <div className="modal fade " id="myModal">
+      <div className="modal fade " id={`modal-${graphCardId}`}>
         <div className="modal-dialog modal-xl graph-card__modal">
-          <div className="modal-content">{renderGraph(modalOpen)}</div>
+          <div className="modal-content">
+            {modalOpen && fetched.graphCardDimensionsFetched ? (
+              renderCardContent()
+            ) : (
+              <Loader />
+            )}
+          </div>
         </div>
       </div>
     );
   };
 
+  const renderContent = () => {
+    if (fetched.dataFetched) {
+      return (
+        <>
+          {!modalOpen ? renderCardContent() : <Loader />}
+          {renderModal()}
+        </>
+      );
+    }
+    return <Loader />;
+  };
+
   return (
-    <div id={graphCardId} className="col card graph-card">
-      {fetched ? renderGraph() : renderContentLoading()}
-      {fetched && renderModal()}
+    <div
+      id={graphCardId}
+      className={`col card graph-card graph-card-${graphCardId}`}
+    >
+      {renderContent()}
     </div>
   );
 };

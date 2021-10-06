@@ -25,18 +25,14 @@ const sortData = (data, setGraphData, orderData, inModal, indicatorInfo) => {
         (record) => record.value < trillion && record.value >= billion
       );
 
-      const hasBillionFigure = () => {
-        if (!inModal) {
-          return hasBillionValue ? true : false;
-        }
-      };
+      console.log(inModal);
 
       return finalData.map((record) => {
         return {
           ...record,
           value: record.value / trillion,
           maxValue: TrillionStr,
-          hasBillionFigure: hasBillionFigure(),
+          hasBillionFigure: hasBillionValue ? true : false,
         };
       });
     }
@@ -48,18 +44,12 @@ const sortData = (data, setGraphData, orderData, inModal, indicatorInfo) => {
         (record) => record.value < billion && record.value >= million
       );
 
-      const hasMillionFigure = () => {
-        if (!inModal) {
-          return hasMillionValue ? true : false;
-        }
-      };
-
       return finalData.map((record) => {
         return {
           ...record,
           value: record.value / billion,
           maxValue: BillionStr,
-          hasMillionFigure: hasMillionFigure(),
+          hasMillionFigure: hasMillionValue ? true : false,
         };
       });
     }
@@ -71,18 +61,12 @@ const sortData = (data, setGraphData, orderData, inModal, indicatorInfo) => {
         (record) => record.value < million && record.value > 0
       );
 
-      const hasFigureLessThanMillion = () => {
-        if (!inModal) {
-          return figureLessThanMillion ? true : false;
-        }
-      };
-
       return finalData.map((record) => {
         return {
           ...record,
           value: record.value / million,
           maxValue: MillionStr,
-          hasFigureLessThanMillion: hasFigureLessThanMillion(),
+          hasFigureLessThanMillion: figureLessThanMillion ? true : false,
         };
       });
     }

@@ -12,6 +12,14 @@
     box-shadow: $box-shadow;
   }
 
+  svg {
+    .main-graph {
+      rect:hover {
+        opacity: 0.75;
+      }
+    }
+  }
+
   &--empty {
     max-width: calc(50% - 5px) !important;
     &__add-graph-button {
@@ -39,6 +47,10 @@
     display: flex;
     justify-content: flex-end;
 
+    .dropdown {
+      flex: 1;
+    }
+
     &__button {
       color: #000;
       font-weight: bolder;
@@ -53,6 +65,12 @@
 
       &:hover {
         opacity: 1;
+      }
+
+      &--order {
+        i {
+          color: white;
+        }
       }
 
       &--pageNav {
@@ -78,6 +96,9 @@
           }
         }
       }
+    }
+    ul li {
+      cursor: pointer;
     }
   }
 

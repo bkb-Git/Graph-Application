@@ -14,7 +14,6 @@ const Slot = (props) => {
   const [selectionProgress, setSelectionProgress] = useState({ step: 0 });
   const [graphData, setGraphData] = useState({});
   const [indicatorsFetched, setIndicatorsFetched] = useState(false);
-  const [slotDimensions, setSlotDimensions] = useState({});
 
   useEffect(() => {
     if (selectionProgress.step === 2) {
@@ -37,13 +36,6 @@ const Slot = (props) => {
       setSelectionProgress({ step: 0 });
     }
   }, [graphList, graphObj]);
-
-  useEffect(() => {
-    const slotElement = document.getElementById(`emptySlot-${id}`);
-    const slotHeight = slotElement.offsetHeight;
-    const slotWidth = slotElement.offsetWidth;
-    setSlotDimensions({ slotHeight, slotWidth });
-  }, [id]);
 
   const handleAddGraphHere = () => {
     const modifiedGraphList = graphList;
@@ -124,7 +116,6 @@ const Slot = (props) => {
       <GraphCard
         graphCardId={id}
         deleteCard={handleDeleteSlot}
-        slotDimensions={slotDimensions}
         data={graphData}
       />
     );
