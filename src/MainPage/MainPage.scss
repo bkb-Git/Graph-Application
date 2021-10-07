@@ -1,5 +1,7 @@
+@import "../style/global_styles.scss";
+
 .main-page {
-    font-size: 50px;
-    font-weight: bolder;
-    font-family: Georgia, 'Times New Roman', Times, serif;
+  &__container {
+    margin-top: none;
+  }
 }
