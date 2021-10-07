@@ -8,6 +8,8 @@ import { sortData } from "./dataManipulation";
 import "./D3Graph.scss";
 import BarChart from "./BarChart/BarChart";
 import Loader from "../../../Loader";
+import LineChart from "./LineChart/LineChart";
+import { BarChartStr } from "../../../../Constants/keywords";
 
 const D3Graph = (props) => {
   const {
@@ -15,6 +17,7 @@ const D3Graph = (props) => {
     axisLabels,
     inModal,
     id,
+    selectorData,
     fetchedObj,
     indicatorInfo,
     orderData,
@@ -35,21 +38,9 @@ const D3Graph = (props) => {
   useEffect(() => {
     if (!inModal) {
       if (orderData.page !== prevOrderData?.page) {
-        return sortData(
-          data,
-          setGraphData,
-          orderData,
-          inModal,
-          indicatorInfo
-        );
+        return sortData(data, setGraphData, orderData, inModal, indicatorInfo);
       } else if (orderData.page === 0) {
-        return sortData(
-          data,
-          setGraphData,
-          orderData,
-          inModal,
-          indicatorInfo
-        );
+        return sortData(data, setGraphData, orderData, inModal, indicatorInfo);
       }
     }
     return sortData(data, setGraphData, orderData, inModal, indicatorInfo);
@@ -72,7 +63,7 @@ const D3Graph = (props) => {
     }
   }, [id, dimensions, fetched, setFetched]);
 
-  const renderGraph = () => {
+  const barGraph = () => {
     return (
       <BarChart
         axisLabels={axisLabels}
@@ -84,6 +75,26 @@ const D3Graph = (props) => {
         graphData={graphData}
       />
     );
+  };
+
+  const lineGraph = () => {
+    return (
+      <LineChart
+        axisLabels={axisLabels}
+        indicators={indicators}
+        indicatorInfo={indicatorInfo}
+        graphData={graphData}
+        dimensions={graphDimensions}
+        orderData={orderData}
+      />
+    );
+  };
+
+  const renderGraph = () => {
+    if (selectorData.chart === BarChartStr) {
+      return barGraph();
+    }
+    return lineGraph();
   };
 
   return graphData && fetched.cardHeaderDimensionsFetched ? (

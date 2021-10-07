@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Modal, Tooltip } from "bootstrap";
 
 import {
+  BarChartStr,
   dateAscendingOrder,
   // eslint-disable-next-line no-unused-vars
   dateDescendingOrder,
@@ -33,7 +34,9 @@ const GraphCard = (props) => {
     order: dateAscendingOrder,
   });
 
-  const { countryCode, indicator, countryTitle, indicatorTitle } = data;
+  const { countryCode, indicator, countryTitle, indicatorTitle, chart } = data;
+
+  console.log(data.chart);
 
   // Fetch data
   useEffect(() => {
@@ -246,6 +249,12 @@ const GraphCard = (props) => {
     };
 
     const renderOrderButton = () => {
+      const renderDisabled = () => {
+        if (chart === BarChartStr) {
+          return "";
+        }
+        return "disabled";
+      };
       return (
         <div className="dropdown">
           <button
@@ -253,7 +262,7 @@ const GraphCard = (props) => {
             data-bs-toggle="dropdown"
             aria-expanded="false"
             id={`${graphCardId}-button-order`}
-            className="btn btn-primary graph-card__actions__button  graph-card__actions__button--order"
+            className={`btn ${renderDisabled()} btn-primary graph-card__actions__button  graph-card__actions__button--order`}
           >
             <i class="bi bi-bar-chart-fill"></i>
           </button>
@@ -307,6 +316,7 @@ const GraphCard = (props) => {
     return (
       <D3Graph
         dataForD3={graphData}
+        selectorData={data}
         indicatorInfo={indicator}
         inModal={modalOpen}
         orderData={orderData}

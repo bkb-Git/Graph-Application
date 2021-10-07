@@ -1,29 +1,25 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import * as d3 from "d3";
-import { Tooltip } from "bootstrap";
+
 import {
   BillionStr,
   MillionStr,
-  noData,
   TrillionStr,
 } from "../../../../../Constants/keywords";
 
-const BarChart = (props) => {
+const LineChart = (props) => {
   const {
     axisLabels,
-    indicators,
     graphData,
-    id,
     dimensions,
-    indicatorInfo,
     orderData,
+    indicatorInfo,
+    indicators,
   } = props;
 
   const { height, width } = dimensions;
   const { xAxisLabel, yValue } = axisLabels;
   const { gdpTotalinUSD, totalPopulation } = indicators;
-
-  const [graphRendered, setGraphRendered] = useState(false);
 
   const color = "#5902ab";
 
@@ -31,13 +27,14 @@ const BarChart = (props) => {
 
   const renderGraph = useCallback(
     (svgEl) => {
-      const svg = d3.select(svgEl);
+      const svg = d3
+        .select(svgEl)
+        .attr("fill", "none")
+        .attr("stroke-linejoin", "round")
+        .attr("stroke-linecap", "round");
 
-      const margin = { top: 25, right: 10, bottom: 25, left: 43 };
-      const graphDataValues = graphData.filter(
-        (data) => typeof data.value === "number"
-      );
-      const meanValue = d3.mean(graphDataValues, (d) => d[yValue]);
+      //   const margin = { top: 25, right: 10, bottom: 25, left: 43 };
+      const margin = { top: 20, right: 30, bottom: 30, left: 40 };
 
       const xAxisLabelFormat = (i) => {
         const tickLabel = graphData[i][xAxisLabel];
@@ -60,75 +57,16 @@ const BarChart = (props) => {
         return tickStr.join("");
       };
 
-      const barHeight = (d) => {
-        if (d[yValue] === noData) {
-          return y(0) - y(meanValue);
-        }
-        return y(0) - y(d[yValue]);
-      };
-
-      const handleBarY = (d) => {
-        if (d[yValue] === noData) {
-          return y(meanValue);
-        }
-        return y(d[yValue]);
-      };
-
-      const handleBarColor = (d) => {
-        if (d[yValue] !== noData) {
-          return color;
-        }
-        return "#4F4F4F";
-      };
-
-      const handleTitle = (d) => {
-        const suffix = () => {
-          if (indicatorInfo === gdpTotalinUSD) {
-            switch (d.maxValue) {
-              case TrillionStr:
-                return TrillionStr;
-              case BillionStr:
-                return BillionStr;
-              case MillionStr:
-                return MillionStr;
-              default:
-                return null;
-            }
-          } else if (indicatorInfo === totalPopulation) {
-            switch (d.maxValue) {
-              case BillionStr:
-                return BillionStr;
-              case MillionStr:
-                return MillionStr;
-              default:
-                return null;
-            }
-          }
-          return null;
-        };
-
-        const renderValue = () => {
-          if (indicatorInfo === gdpTotalinUSD) {
-            if (d[yValue] === noData) {
-              return "No Data";
-            }
-            return `$${d3.format([".1f"])(d[yValue])} ${suffix()}`;
-          } else if (indicatorInfo === totalPopulation) {
-            if (d[yValue] === noData) {
-              return "No Data";
-            }
-            return ` ${d3.format([".1s"])(d[yValue])}`;
-          }
-        };
-        return `<h5>Year: ${d[xAxisLabel]}</h5>
-                <p>Value: ${renderValue()}</p>`;
-      };
+      const graphDataValues = graphData.filter(
+        (data) => typeof data.value === "number"
+      );
 
       const x = d3
-        .scaleBand()
-        .domain(d3.range(graphData.length))
-        .range([margin.left, width - margin.right])
-        .padding(0.1);
+        .scaleUtc()
+        .domain(
+          d3.extent(graphData, (d) => new Date(d[xAxisLabel]).getUTCFullYear())
+        )
+        .range([margin.left, width - margin.right]);
 
       const y = d3
         .scaleLinear()
@@ -136,13 +74,20 @@ const BarChart = (props) => {
         .nice()
         .range([height - margin.bottom, margin.top]);
 
+      const line = d3
+        .line()
+        .defined((d) => !isNaN(d.value))
+        .x((d) => x(new Date(d[xAxisLabel]).getUTCFullYear()))
+        .y((d) => y(d[yValue]));
+
       const xAxis = (g) => {
         return g
           .attr("transform", `translate(0,${height - margin.bottom})`)
           .call(
             d3
               .axisBottom(x)
-              .tickFormat((i) => xAxisLabelFormat(i))
+              .ticks(graphData.length - 1)
+              .tickFormat((d, i) => xAxisLabelFormat(i))
               .tickSizeOuter(0)
           );
       };
@@ -220,52 +165,51 @@ const BarChart = (props) => {
           .call((g) => g.select(".domain").remove())
           .call((g) =>
             g
-              .append("text")
-              .attr("x", -35)
-              .attr("y", 10)
-              .attr("fill", "currentColor")
+              .select(".tick:last-of-type text")
+              .clone()
+              .attr("x", 3)
+              .attr("y", -10)
               .attr("text-anchor", "start")
+              .attr("font-weight", "bold")
               .text(renderText())
           );
       };
 
       svg.selectAll("g").transition().duration(50).style("opacity", 0).remove();
-
       svg
-        .append("g")
-        .attr("class", `main-graph main-graph-${id}`)
-        .selectAll("rect")
-        .data(graphData)
-        .join((enter) => enter.append("rect"))
-        .attr("fill", (d) => handleBarColor(d))
-        .attr("title", (d) => handleTitle(d))
-        .attr("id", (d) => "graph-bar")
-        .attr("x", (d, i) => x(i))
-        .attr("y", y(0))
+        .selectAll("path")
         .transition()
-        .duration(80)
-        .ease(d3.easeLinear)
-        .delay((d, i) => i * 70)
-        .attr("y", (d) => handleBarY(d))
-        .attr("height", (d) => barHeight(d))
-        .attr("width", x.bandwidth());
+        .duration(50)
+        .style("opacity", 0)
+        .remove();
 
       svg.append("g").call(xAxis);
 
       svg.append("g").call(yAxis);
 
-      return setGraphRendered(true);
+      svg
+        .append("path")
+        .datum(graphData.filter(line.defined()))
+        .attr("stroke", "#ccc")
+        .attr("stroke-width", 1.5)
+        .attr("d", line);
+
+      return svg
+        .append("path")
+        .datum(graphData)
+        .attr("stroke", color)
+        .attr("stroke-width", 1.5)
+        .attr("d", line);
     },
     [
       yValue,
+      graphData,
+      height,
+      width,
       xAxisLabel,
       gdpTotalinUSD,
       indicatorInfo,
       totalPopulation,
-      graphData,
-      height,
-      width,
-      id,
     ]
   );
 
@@ -274,25 +218,9 @@ const BarChart = (props) => {
     return renderGraph(svgNode);
   }, [orderData, renderGraph]);
 
-  useEffect(() => {
-    if (graphRendered) {
-      const bars = Array.from(document.querySelectorAll('[id="graph-bar"]'));
-
-      bars.map((tooltip) => {
-        return new Tooltip(tooltip, {
-          trigger: "hover",
-          animation: true,
-          placement: "top",
-          html: true,
-          title: tooltip.getAttribute("title"),
-        });
-      });
-    }
-  }, [graphRendered, id, graphData]);
-
   return (
     <svg ref={svgRef} x="0" y="0" style={{ width: "100%", height: "100%" }} />
   );
 };
 
-export default BarChart;
+export default LineChart;

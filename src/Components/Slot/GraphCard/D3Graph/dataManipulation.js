@@ -3,6 +3,7 @@ import {
   dateAscendingOrder,
   dateDescendingOrder,
   MillionStr,
+  noData,
   TrillionStr,
   valueAscendingOrder,
   valueDescendingOrder,
@@ -17,6 +18,13 @@ const sortData = (data, setGraphData, orderData, inModal, indicatorInfo) => {
   const index = { stop: 21, start: 0, next: 20 };
   let finalData;
 
+  const handleValue = (value, divider) => {
+    if (value === null) {
+      return noData;
+    }
+    return value / divider;
+  };
+
   const convertGDPfigures = (finalData) => {
     const hasTrillion = finalData.find((record) => record.value >= trillion);
 
@@ -25,12 +33,10 @@ const sortData = (data, setGraphData, orderData, inModal, indicatorInfo) => {
         (record) => record.value < trillion && record.value >= billion
       );
 
-      console.log(inModal);
-
       return finalData.map((record) => {
         return {
           ...record,
-          value: record.value / trillion,
+          value: handleValue(record.value, trillion),
           maxValue: TrillionStr,
           hasBillionFigure: hasBillionValue ? true : false,
         };
@@ -47,7 +53,7 @@ const sortData = (data, setGraphData, orderData, inModal, indicatorInfo) => {
       return finalData.map((record) => {
         return {
           ...record,
-          value: record.value / billion,
+          value: handleValue(record.value, billion),
           maxValue: BillionStr,
           hasMillionFigure: hasMillionValue ? true : false,
         };
@@ -64,7 +70,7 @@ const sortData = (data, setGraphData, orderData, inModal, indicatorInfo) => {
       return finalData.map((record) => {
         return {
           ...record,
-          value: record.value / million,
+          value: handleValue(record.value, million),
           maxValue: MillionStr,
           hasFigureLessThanMillion: figureLessThanMillion ? true : false,
         };
@@ -91,7 +97,7 @@ const sortData = (data, setGraphData, orderData, inModal, indicatorInfo) => {
       return finalData.map((record) => {
         return {
           ...record,
-          value: record.value / billion,
+          value: handleValue(record.value, billion),
           maxValue: BillionStr,
           hasMillionFigure: hasMillionFigure(),
         };
@@ -138,6 +144,8 @@ const sortData = (data, setGraphData, orderData, inModal, indicatorInfo) => {
   if (indicatorInfo === totalPopulation) {
     finalData = convertPopulationFigures(finalData);
   }
+
+  console.log(finalData);
 
   return setGraphData(finalData);
 };

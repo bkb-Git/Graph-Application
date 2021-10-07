@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Country, Indicator } from "../../Constants/keywords";
+import { Chart, Country, Indicator } from "../../Constants/keywords";
 
 import GraphCard from "./GraphCard";
 import SelectorCard from "./SelectorCard";
@@ -13,10 +13,14 @@ const Slot = (props) => {
 
   const [selectionProgress, setSelectionProgress] = useState({ step: 0 });
   const [graphData, setGraphData] = useState({});
-  const [indicatorsFetched, setIndicatorsFetched] = useState(false);
+  const [indicatorsFetched, setIndicatorsFetched] = useState({
+    fetched: false,
+    error: false,
+  });
+  const [fetchError, setFetchError] = useState({ fetchError: false });
 
   useEffect(() => {
-    if (selectionProgress.step === 2) {
+    if (selectionProgress.step === 2 && !indicatorsFetched.fetched) {
       fetch("https://api.worldbank.org/v2/indicator?format=json")
         .then((response) => response.json())
         .then((data) => {
@@ -26,10 +30,11 @@ const Slot = (props) => {
             return { id: indicator.id, name: indicator.name };
           });
 
-          return setIndicatorsFetched(true);
-        });
+          return setIndicatorsFetched({ ...indicatorsFetched, fetched: true });
+        })
+        .catch((err) => setFetchError({ ...fetchError, errorMessage: err }));
     }
-  }, [selectionProgress]);
+  }, [selectionProgress, indicatorsFetched, fetchError]);
 
   useEffect(() => {
     if (graphList.length === 1 && !graphObj.created) {
@@ -83,6 +88,11 @@ const Slot = (props) => {
         indicator: item,
         indicatorTitle: selectedItem.indicatorTitle,
       });
+    } else if (type === Chart) {
+      setGraphData({
+        ...graphData,
+        chart: item,
+      });
     }
 
     return setSelectionProgress((prev) => ({ step: prev.step + 1 }));
@@ -90,6 +100,12 @@ const Slot = (props) => {
 
   const handleGoBack = () =>
     setSelectionProgress((prev) => ({ step: prev.step - 1 }));
+
+  const renderError = () => {
+    <div class="alert alert-danger" style={{ height: "100%" }} role="alert">
+      {fetchError.errorMessage}
+    </div>;
+  };
 
   const renderEmptySlot = () => {
     return (
@@ -111,7 +127,12 @@ const Slot = (props) => {
   if (!graphObj.created) {
     return renderEmptySlot();
   }
-  if (selectionProgress.step === 3) {
+
+  if (fetchError.fetchError) {
+    return renderError();
+  }
+
+  if (selectionProgress.step === 4) {
     return (
       <GraphCard
         graphCardId={id}
@@ -125,7 +146,7 @@ const Slot = (props) => {
       handleSelect={handleSelect}
       handleGoBack={handleGoBack}
       regionFetched={regionCountriesFetched}
-      indicatorsFetched={indicatorsFetched}
+      indicatorsFetched={indicatorsFetched.fetched}
       region={regionalCountries}
       progress={selectionProgress.step}
     />

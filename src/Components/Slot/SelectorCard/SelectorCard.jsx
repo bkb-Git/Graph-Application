@@ -1,5 +1,11 @@
 import { indicators } from "../../../Constants/indicators";
-import { Country, Indicator } from "../../../Constants/keywords";
+import {
+  BarChartStr,
+  Chart,
+  Country,
+  Indicator,
+  LineChartStr,
+} from "../../../Constants/keywords";
 import Loader from "../../Loader";
 
 const SelectorCard = (props) => {
@@ -13,7 +19,7 @@ const SelectorCard = (props) => {
   } = props;
   const { gdpTotalinUSD, totalPopulation } = indicators;
 
-  const progressStep = { 1: "33", 2: "66" };
+  const progressStep = { 1: "25", 2: "50", 3: "75" };
 
   const countrySelector = () => {
     if (regionFetched) {
@@ -81,11 +87,44 @@ const SelectorCard = (props) => {
     return <Loader />;
   };
 
+  const graphSelector = () => {
+    return (
+      <div className="list-group">
+        <button
+          id="graph-selector-BarChart"
+          onClick={() =>
+            handleSelect({
+              selectedItem: { item: BarChartStr },
+              type: Chart,
+            })
+          }
+          className="list-group-item list-group-item-action"
+        >
+          Bar Chart
+        </button>
+        <button
+          id="graph-selector-LineChart"
+          onClick={(e) =>
+            handleSelect({
+              selectedItem: { item: LineChartStr },
+              type: Chart,
+            })
+          }
+          className="list-group-item list-group-item-action"
+        >
+          Line Chart
+        </button>
+      </div>
+    );
+  };
+
   const renderSelector = () => {
     if (progress === 1) {
       return countrySelector();
     } else if (progress === 2) {
       return indicatorSelector();
+    } else if (progress === 3) {
+      return graphSelector();
     }
     return null;
   };
@@ -94,8 +133,10 @@ const SelectorCard = (props) => {
     const renderProgressTitle = () => {
       if (progress === 1) {
         return "Select Country";
+      } else if (progress === 2) {
+        return "Select Indicator";
       }
-      return "Select Indicator";
+      return "Select Chart";
     };
     return (
       <div class="progress">
@@ -115,7 +156,7 @@ const SelectorCard = (props) => {
   };
 
   const renderButtonBack = () => {
-    if (progress === 2) {
+    if (progress > 1) {
       return (
         <div className="button-back col-2 justify-content-lg-start">
           <button
