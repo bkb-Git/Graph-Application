@@ -1,27 +1,30 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 import { Tooltip } from "bootstrap";
+import { noData } from "../../../../../Constants/keywords";
 import {
-  BillionStr,
-  MillionStr,
-  noData,
-  TrillionStr,
-} from "../../../../../Constants/keywords";
+  gdpTotalinUSD,
+  totalPopulation,
+} from "../../../../../Constants/indicators";
+import {
+  handleTooltipTitle,
+  xAxisLabelFormat,
+  yAxisTickFormat,
+} from "../../../../../libs/helpers/graphFormatting";
 
 const BarChart = (props) => {
   const {
     axisLabels,
-    indicators,
     graphData,
     id,
     dimensions,
     indicatorInfo,
     orderData,
+    indicatorUnit,
   } = props;
 
   const { height, width } = dimensions;
   const { xAxisLabel, yValue } = axisLabels;
-  const { gdpTotalinUSD, totalPopulation } = indicators;
 
   const [graphRendered, setGraphRendered] = useState(false);
 
@@ -29,99 +32,61 @@ const BarChart = (props) => {
 
   const svgRef = useRef(null);
 
+  const graphDataValues = graphData.filter(
+    (data) => typeof data.value === "number"
+  );
+  const meanValue = d3.mean(graphDataValues, (d) => {
+    const value = d[yValue];
+    let finalValue;
+
+    value < 0 ? (finalValue = value * -1) : (finalValue = value);
+    return finalValue;
+  });
+
   const renderGraph = useCallback(
     (svgEl) => {
       const svg = d3.select(svgEl);
 
       const margin = { top: 25, right: 10, bottom: 25, left: 43 };
-      const graphDataValues = graphData.filter(
-        (data) => typeof data.value === "number"
-      );
-      const meanValue = d3.mean(graphDataValues, (d) => d[yValue]);
 
-      const xAxisLabelFormat = (i) => {
-        const tickLabel = graphData[i][xAxisLabel];
-        const parsedInt = parseInt(graphData[i][xAxisLabel]);
+      // const minValue = d3.min(graphDataValues, (d) => d[yValue]);
 
-        if (i === 0) {
-          return tickLabel;
-        } else if (parsedInt < 2000) {
-          const tickStr = tickLabel.split("");
-          tickStr.splice(0, 2, " '' ");
-
-          return tickStr.join("");
-        } else if (parsedInt === 2000) {
-          return tickLabel;
+      const domainMaxValue = (d) => {
+        if (d[yValue] < 0) {
+          return d[yValue] * -1;
         }
-
-        const tickStr = tickLabel.split("");
-        tickStr.splice(0, 2, ' "" ');
-
-        return tickStr.join("");
+        return d[yValue];
       };
 
       const barHeight = (d) => {
-        if (d[yValue] === noData) {
+        const value = d[yValue];
+
+        if (value === noData) {
           return y(0) - y(meanValue);
+        } else if (value < 0) {
+          return y(0) - y(value * -1);
         }
-        return y(0) - y(d[yValue]);
+        return y(0) - y(value);
       };
 
       const handleBarY = (d) => {
-        if (d[yValue] === noData) {
+        const value = d[yValue];
+
+        if (value === noData) {
           return y(meanValue);
+        } else if (value < 0) {
+          return y(value * -1);
         }
-        return y(d[yValue]);
+        return y(value);
       };
 
       const handleBarColor = (d) => {
-        if (d[yValue] !== noData) {
+        if (d[yValue] !== noData && d[yValue] > 0) {
           return color;
+        } else if (d[yValue] < 0) {
+          return "#821E1A";
         }
-        return "#4F4F4F";
-      };
-
-      const handleTitle = (d) => {
-        const suffix = () => {
-          if (indicatorInfo === gdpTotalinUSD) {
-            switch (d.maxValue) {
-              case TrillionStr:
-                return TrillionStr;
-              case BillionStr:
-                return BillionStr;
-              case MillionStr:
-                return MillionStr;
-              default:
-                return null;
-            }
-          } else if (indicatorInfo === totalPopulation) {
-            switch (d.maxValue) {
-              case BillionStr:
-                return BillionStr;
-              case MillionStr:
-                return MillionStr;
-              default:
-                return null;
-            }
-          }
-          return null;
-        };
-
-        const renderValue = () => {
-          if (indicatorInfo === gdpTotalinUSD) {
-            if (d[yValue] === noData) {
-              return "No Data";
-            }
-            return `$${d3.format([".1f"])(d[yValue])} ${suffix()}`;
-          } else if (indicatorInfo === totalPopulation) {
-            if (d[yValue] === noData) {
-              return "No Data";
-            }
-            return ` ${d3.format([".1s"])(d[yValue])}`;
-          }
-        };
-        return `<h5>Year: ${d[xAxisLabel]}</h5>
-                <p>Value: ${renderValue()}</p>`;
+        return "#828282";
       };
 
       const x = d3
@@ -132,7 +97,7 @@ const BarChart = (props) => {
 
       const y = d3
         .scaleLinear()
-        .domain([0, d3.max(graphDataValues, (d) => d[yValue])])
+        .domain([0, d3.max(graphDataValues, (d) => domainMaxValue(d))])
         .nice()
         .range([height - margin.bottom, margin.top]);
 
@@ -142,7 +107,7 @@ const BarChart = (props) => {
           .call(
             d3
               .axisBottom(x)
-              .tickFormat((i) => xAxisLabelFormat(i))
+              .tickFormat((i) => xAxisLabelFormat(graphData, i, xAxisLabel))
               .tickSizeOuter(0)
           );
       };
@@ -163,60 +128,16 @@ const BarChart = (props) => {
           }
         };
 
-        const renderTickText = (label) => {
-          if (indicatorInfo === gdpTotalinUSD) {
-            const largestFigure = graphData[0].maxValue;
-
-            const prefix = () => {
-              switch (largestFigure) {
-                case TrillionStr:
-                  return "T";
-                case BillionStr:
-                  return "B";
-
-                case MillionStr:
-                  return "M";
-
-                default:
-                  break;
-              }
-            };
-
-            const formatSpecifier = () => {
-              const has3digits = graphData.find((record) => record.value >= 95);
-              if (has3digits) {
-                return "($.0f";
-              }
-              return "($.1f";
-            };
-
-            return d3
-              .formatLocale({ currency: ["$", prefix()] })
-              .format([formatSpecifier()]);
-          }
-
-          if (indicatorInfo === totalPopulation) {
-            const unit = graphData[0].maxValue;
-
-            const specifier = () => {
-              if (graphData[0].hasMillionFigure) {
-                return "($.1f";
-              }
-              return "($.0f";
-            };
-
-            if (unit) {
-              return d3
-                .formatLocale({ currency: ["", "B"] })
-                .format([specifier()]);
-            }
-            return d3.format(["(.1s"]);
-          }
-        };
-
         return g
           .attr("transform", `translate(${margin.left},0)`)
-          .call(d3.axisLeft(y).ticks().tickFormat(renderTickText()))
+          .call(
+            d3
+              .axisLeft(y)
+              .ticks()
+              .tickFormat(
+                yAxisTickFormat(indicatorInfo, indicatorUnit, graphData)
+              )
+          )
           .call((g) => g.select(".domain").remove())
           .call((g) =>
             g
@@ -238,8 +159,10 @@ const BarChart = (props) => {
         .data(graphData)
         .join((enter) => enter.append("rect"))
         .attr("fill", (d) => handleBarColor(d))
-        .attr("title", (d) => handleTitle(d))
-        .attr("id", (d) => "graph-bar")
+        .attr("title", (d) =>
+          handleTooltipTitle(d, indicatorInfo, yValue, xAxisLabel)
+        )
+        .attr("id", (d) => `graph-bar`)
         .attr("x", (d, i) => x(i))
         .attr("y", y(0))
         .transition()
@@ -259,25 +182,29 @@ const BarChart = (props) => {
     [
       yValue,
       xAxisLabel,
-      gdpTotalinUSD,
       indicatorInfo,
-      totalPopulation,
       graphData,
       height,
       width,
+      graphDataValues,
+      meanValue,
       id,
+      indicatorUnit,
     ]
   );
 
+  // Render Graph
   useEffect(() => {
     const svgNode = svgRef.current;
+    setGraphRendered(false);
     return renderGraph(svgNode);
   }, [orderData, renderGraph]);
 
+  // Bar Tooltips
   useEffect(() => {
     if (graphRendered) {
-      const bars = Array.from(document.querySelectorAll('[id="graph-bar"]'));
-
+      const bars = Array.from(document.querySelectorAll(`[id="graph-bar"]`));
+      console.log(bars);
       bars.map((tooltip) => {
         return new Tooltip(tooltip, {
           trigger: "hover",

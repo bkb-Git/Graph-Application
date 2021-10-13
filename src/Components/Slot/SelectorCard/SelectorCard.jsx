@@ -1,4 +1,3 @@
-import { indicators } from "../../../Constants/indicators";
 import {
   BarChartStr,
   Chart,
@@ -17,7 +16,7 @@ const SelectorCard = (props) => {
     indicatorsFetched,
     handleGoBack,
   } = props;
-  const { gdpTotalinUSD, totalPopulation } = indicators;
+  // const { gdpTotalinUSD, totalPopulation } = indicators;
 
   const progressStep = { 1: "25", 2: "50", 3: "75" };
 
@@ -47,39 +46,29 @@ const SelectorCard = (props) => {
   };
 
   const indicatorSelector = () => {
-    if (indicatorsFetched) {
+    if (indicatorsFetched.fetched) {
+      const { indicators } = indicatorsFetched;
       return (
         <div className="list-group">
-          <button
-            id="gdp-indicator"
-            onClick={() =>
-              handleSelect({
-                selectedItem: {
-                  item: gdpTotalinUSD,
-                  indicatorTitle: "GDP in $USD",
-                },
-                type: Indicator,
-              })
-            }
-            className="list-group-item list-group-item-action"
-          >
-            GDP in $USD
-          </button>
-          <button
-            key="population-indicator"
-            onClick={(e) =>
-              handleSelect({
-                selectedItem: {
-                  item: totalPopulation,
-                  indicatorTitle: "Population in Total",
-                },
-                type: Indicator,
-              })
-            }
-            className="list-group-item list-group-item-action"
-          >
-            Population in total
-          </button>
+          {indicators.map((indicator) => (
+            <button
+              key={indicator.id}
+              id={indicator.id}
+              onClick={() =>
+                handleSelect({
+                  selectedItem: {
+                    item: indicator.id,
+                    indicatorTitle: indicator.name,
+                    indicatorUnit: indicator.unit,
+                  },
+                  type: Indicator,
+                })
+              }
+              className="list-group-item list-group-item-action"
+            >
+              {indicator.name}
+            </button>
+          ))}
         </div>
       );
     }

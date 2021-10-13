@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
+import { indicators } from "../../Constants/indicators";
 import { Chart, Country, Indicator } from "../../Constants/keywords";
+import { WBIndicatorById } from "../../WorldBank/worldBankAPIs";
 
 import GraphCard from "./GraphCard";
 import SelectorCard from "./SelectorCard";
@@ -21,18 +23,24 @@ const Slot = (props) => {
 
   useEffect(() => {
     if (selectionProgress.step === 2 && !indicatorsFetched.fetched) {
-      fetch("https://api.worldbank.org/v2/indicator?format=json")
-        .then((response) => response.json())
-        .then((data) => {
-          //TODO set indicators in a useState hook , and pass it down to the selectorCard
-          // eslint-disable-next-line no-unused-vars
-          const indicators = data[1].map((indicator) => {
-            return { id: indicator.id, name: indicator.name };
-          });
-
-          return setIndicatorsFetched({ ...indicatorsFetched, fetched: true });
-        })
-        .catch((err) => setFetchError({ ...fetchError, errorMessage: err }));
+      Promise.all(
+        indicators.map((indicator) =>
+          fetch(WBIndicatorById(indicator.id))
+            .then((response) => response.json())
+            .then((data) => {
+              return { ...data[1][0], unit: indicator.unit };
+            })
+            .catch((err) => err)
+        )
+      )
+        .then((values) =>
+          setIndicatorsFetched({
+            ...indicatorsFetched,
+            indicators: values,
+            fetched: true,
+          })
+        )
+        .catch((err) => setFetchError({ fetchError: true, errorMessage: err }));
     }
   }, [selectionProgress, indicatorsFetched, fetchError]);
 
@@ -74,7 +82,7 @@ const Slot = (props) => {
 
   const handleSelect = (props) => {
     const { selectedItem, type } = props;
-    const { item } = selectedItem;
+    const { item, indicatorTitle, indicatorUnit } = selectedItem;
 
     if (type === Country) {
       setGraphData({
@@ -86,7 +94,8 @@ const Slot = (props) => {
       setGraphData({
         ...graphData,
         indicator: item,
-        indicatorTitle: selectedItem.indicatorTitle,
+        indicatorTitle,
+        indicatorUnit,
       });
     } else if (type === Chart) {
       setGraphData({
@@ -146,7 +155,7 @@ const Slot = (props) => {
       handleSelect={handleSelect}
       handleGoBack={handleGoBack}
       regionFetched={regionCountriesFetched}
-      indicatorsFetched={indicatorsFetched.fetched}
+      indicatorsFetched={indicatorsFetched}
       region={regionalCountries}
       progress={selectionProgress.step}
     />

@@ -34,9 +34,14 @@ const GraphCard = (props) => {
     order: dateAscendingOrder,
   });
 
-  const { countryCode, indicator, countryTitle, indicatorTitle, chart } = data;
-
-  console.log(data.chart);
+  const {
+    countryCode,
+    indicator,
+    countryTitle,
+    indicatorTitle,
+    indicatorUnit,
+    chart,
+  } = data;
 
   // Fetch data
   useEffect(() => {
@@ -61,7 +66,7 @@ const GraphCard = (props) => {
       });
   }, [countryCode, indicator]);
 
-  //Retrieve Graph card dimensions
+  //Retrieve Graph card dimensions && set tooltips
   useEffect(() => {
     const graphCard = document.getElementById(graphCardId);
 
@@ -92,10 +97,7 @@ const GraphCard = (props) => {
         return setFetched({ ...fetched, graphCardDimensionsFetched: true });
       }, 200);
     }
-  }, [graphCardId, modalOpen, fetched]);
 
-  //Set tooltip for action buttons
-  useEffect(() => {
     if (fetched.dataFetched && !modalOpen) {
       const prevButton = document.getElementById(
         `${graphCardId}-button-nav-prev`
@@ -124,7 +126,7 @@ const GraphCard = (props) => {
 
       return buttonTooltip();
     }
-  }, [fetched, graphCardId, modalOpen]);
+  }, [graphCardId, modalOpen, fetched]);
 
   const renderCardActions = () => {
     const handleToggleFullscreenOff = (e) => {
@@ -306,7 +308,7 @@ const GraphCard = (props) => {
         class="card-header graph-card__header"
       >
         <span class="badge graph-card__badge bg-primary ">{countryTitle}</span>
-        <h4 class="graph-card__heading text-center ">{indicatorTitle}</h4>
+        <h6 class="graph-card__heading text-center ">{indicatorTitle}</h6>
         <div className="graph-card__actions">{renderCardActions()}</div>
       </div>
     );
@@ -318,6 +320,7 @@ const GraphCard = (props) => {
         dataForD3={graphData}
         selectorData={data}
         indicatorInfo={indicator}
+        indicatorUnit={indicatorUnit}
         inModal={modalOpen}
         orderData={orderData}
         id={graphCardId}

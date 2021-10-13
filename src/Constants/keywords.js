@@ -6,6 +6,7 @@ const LineChartStr = "Line Chart";
 const BillionStr = "Billion";
 const TrillionStr = "Trillion";
 const MillionStr = "Million";
+const oneHundredThousandStr = "Thousand";
 const dateAscendingOrder = "date ascending order";
 const dateDescendingOrder = "date descending order";
 const valueAscendingOrder = " value ascending order";
@@ -23,6 +24,7 @@ export {
   BillionStr,
   TrillionStr,
   MillionStr,
+  oneHundredThousandStr,
   dateAscendingOrder,
   dateDescendingOrder,
   valueAscendingOrder,

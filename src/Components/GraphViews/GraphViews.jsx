@@ -5,6 +5,7 @@ import usePrevious from "../../libs/helpers/usePrevious";
 import Slot from "../Slot";
 
 import "./GraphViews.scss";
+import { Tooltip } from "bootstrap";
 
 const GraphViews = () => {
   const [graphList, setGraphList] = useState([{ id: 1 }]);
@@ -13,12 +14,13 @@ const GraphViews = () => {
   const history = useHistory();
   const { option } = useParams();
 
-  const prevOption = usePrevious(option);
+  const prevRegionSelected = usePrevious(option);
 
   useEffect(() => {
     setGraphList([{ id: 1 }]);
 
-    if (option !== prevOption) {
+    if (option !== prevRegionSelected) {
+      setRegionCountriesFetched(false);
       fetch(WBCountriesByRegion(option))
         .then((response) => response.json())
         .then((data) => {
@@ -31,7 +33,21 @@ const GraphViews = () => {
           console.log(err);
         });
     }
-  }, [option, history.location, prevOption]);
+  }, [option, history.location, prevRegionSelected]);
+
+  useEffect(() => {
+    const bars = Array.from(document.querySelectorAll(`[id="graph-bar"]`));
+    console.log(`garphview useEffect ${bars}`);
+    bars.map((tooltip) => {
+      return new Tooltip(tooltip, {
+        trigger: "hover",
+        animation: true,
+        placement: "top",
+        html: true,
+        title: tooltip.getAttribute("title"),
+      });
+    });
+  }, [graphList]);
 
   const handleAddGraph = () => {
     if (graphList.length < 4) {

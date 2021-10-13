@@ -31,7 +31,7 @@ const MainPage = () => {
         className="row gx-3 main-page__container"
         style={{ height: "inherit" }}
       >
-        <SideLayout fetched list={sideOptionsList} />
+        <SideLayout fetched={fetched} list={sideOptionsList} />
         <ContentLayout defaultId={fetched && sideOptionsList[0].id} />
       </div>
     </MainLayout>

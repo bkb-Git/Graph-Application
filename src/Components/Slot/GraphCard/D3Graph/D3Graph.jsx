@@ -1,14 +1,12 @@
 import { useEffect, useState } from "react";
 
-import { indicators } from "../../../../Constants/indicators";
-
 import usePrevious from "../../../../libs/helpers/usePrevious";
-import { sortData } from "./dataManipulation";
+import { sortData } from "../../../../libs/helpers/dataManipulation";
 
 import "./D3Graph.scss";
-import BarChart from "./BarChart/BarChart";
+import BarChart from "./BarChart";
 import Loader from "../../../Loader";
-import LineChart from "./LineChart/LineChart";
+import LineChart from "./LineChart";
 import { BarChartStr } from "../../../../Constants/keywords";
 
 const D3Graph = (props) => {
@@ -20,6 +18,7 @@ const D3Graph = (props) => {
     selectorData,
     fetchedObj,
     indicatorInfo,
+    indicatorUnit,
     orderData,
     dimensions,
   } = props;
@@ -67,8 +66,8 @@ const D3Graph = (props) => {
     return (
       <BarChart
         axisLabels={axisLabels}
-        indicators={indicators}
         dimensions={graphDimensions}
+        indicatorUnit={indicatorUnit}
         id={id}
         indicatorInfo={indicatorInfo}
         orderData={orderData}
@@ -81,8 +80,9 @@ const D3Graph = (props) => {
     return (
       <LineChart
         axisLabels={axisLabels}
-        indicators={indicators}
         indicatorInfo={indicatorInfo}
+        indicatorUnit={indicatorUnit}
+        id={id}
         graphData={graphData}
         dimensions={graphDimensions}
         orderData={orderData}

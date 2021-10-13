@@ -1,29 +1,53 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 
 import {
-  BillionStr,
-  MillionStr,
-  TrillionStr,
-} from "../../../../../Constants/keywords";
+  gdpTotalinUSD,
+  totalPopulation,
+} from "../../../../../Constants/indicators";
+import {
+  handleTooltipTitle,
+  xAxisLabelFormat,
+  yAxisTickFormat,
+} from "../../../../../libs/helpers/graphFormatting";
+import { noData } from "../../../../../Constants/keywords";
 
 const LineChart = (props) => {
   const {
     axisLabels,
     graphData,
     dimensions,
+    id,
     orderData,
     indicatorInfo,
-    indicators,
+    indicatorUnit,
   } = props;
 
   const { height, width } = dimensions;
   const { xAxisLabel, yValue } = axisLabels;
-  const { gdpTotalinUSD, totalPopulation } = indicators;
+  // eslint-disable-next-line no-unused-vars
+  const [graphRendered, setGraphRendered] = useState(false);
 
   const color = "#5902ab";
 
   const svgRef = useRef(null);
+
+  const renderTooltip = () => {
+    return (
+      <div
+        style={{ position: "fixed" }}
+        class="tooltip"
+        id={`${id}-line-tooltip`}
+        role="tooltip"
+      >
+        <div
+          class="tooltip-arrow"
+          style={{ transform: "translate(0, 125%)" }}
+        ></div>
+        <div class="tooltip-inner">Tooltip Here</div>
+      </div>
+    );
+  };
 
   const renderGraph = useCallback(
     (svgEl) => {
@@ -33,33 +57,67 @@ const LineChart = (props) => {
         .attr("stroke-linejoin", "round")
         .attr("stroke-linecap", "round");
 
-      //   const margin = { top: 25, right: 10, bottom: 25, left: 43 };
-      const margin = { top: 20, right: 30, bottom: 30, left: 40 };
-
-      const xAxisLabelFormat = (i) => {
-        const tickLabel = graphData[i][xAxisLabel];
-        const parsedInt = parseInt(graphData[i][xAxisLabel]);
-
-        if (i === 0) {
-          return tickLabel;
-        } else if (parsedInt < 2000) {
-          const tickStr = tickLabel.split("");
-          tickStr.splice(0, 2, " '' ");
-
-          return tickStr.join("");
-        } else if (parsedInt === 2000) {
-          return tickLabel;
-        }
-
-        const tickStr = tickLabel.split("");
-        tickStr.splice(0, 2, ' "" ');
-
-        return tickStr.join("");
-      };
+      const margin = { top: 20, right: 30, bottom: 30, left: 50 };
 
       const graphDataValues = graphData.filter(
         (data) => typeof data.value === "number"
       );
+      const minValue = d3.min(graphDataValues, (d) => d[yValue]);
+
+      const meanValue = d3.mean(graphDataValues, (d) => d[yValue]);
+
+      const handleCircleFill = (d) => {
+        if (d[yValue] === noData) {
+          return "#828282";
+        }
+        return d[yValue] < 0 ? "red" : "#00BF19";
+      };
+
+      const calcYStartPoint = () => {
+        const hasNegativeValue = graphDataValues.find(
+          (record) => record.value < 0
+        );
+        if (hasNegativeValue) {
+          return minValue;
+        }
+        return 0;
+      };
+
+      const bisect = (mx, x) => {
+        const bisect = d3.bisector((d) => d.date).left;
+
+        const date = x.invert(mx);
+        const index = bisect(graphData, date, 1);
+        const a = graphData[index - 1];
+        const b = graphData[index];
+        return b && date - a.date > b.date - date ? b : a;
+      };
+
+      const callout = (g, bisectedObj, tooltip) => {
+        if (!bisectedObj) return g.style("display", "none");
+        const { date, value } = bisectedObj;
+
+        g.style("display", null)
+          .style("opacity", 1)
+          .style("pointer-events", "none");
+
+        g.select(".tooltip-inner").html(tooltip);
+      };
+
+      const handleMouseOver = (event, x, tooltip) => {
+        const bisectedObj = bisect(d3.pointer(event, this)[0], x);
+        const { date } = bisectedObj;
+
+        const circleEl = d3.select(`[id="${id}-circle-${date}"]`);
+        const tooltipData = circleEl.attr("title");
+        const dimensions = circleEl.node().getBoundingClientRect();
+
+        tooltip
+          .style("transform", "translate(3%, -40%)")
+          .style("left", `${dimensions.x}px`)
+          .style("top", ` ${dimensions.y}px`)
+          .call(callout, bisectedObj, tooltipData);
+      };
 
       const x = d3
         .scaleUtc()
@@ -70,7 +128,7 @@ const LineChart = (props) => {
 
       const y = d3
         .scaleLinear()
-        .domain([0, d3.max(graphDataValues, (d) => d[yValue])])
+        .domain([calcYStartPoint(), d3.max(graphDataValues, (d) => d[yValue])])
         .nice()
         .range([height - margin.bottom, margin.top]);
 
@@ -87,7 +145,7 @@ const LineChart = (props) => {
             d3
               .axisBottom(x)
               .ticks(graphData.length - 1)
-              .tickFormat((d, i) => xAxisLabelFormat(i))
+              .tickFormat((d, i) => xAxisLabelFormat(graphData, i, xAxisLabel))
               .tickSizeOuter(0)
           );
       };
@@ -108,60 +166,16 @@ const LineChart = (props) => {
           }
         };
 
-        const renderTickText = (label) => {
-          if (indicatorInfo === gdpTotalinUSD) {
-            const largestFigure = graphData[0].maxValue;
-
-            const prefix = () => {
-              switch (largestFigure) {
-                case TrillionStr:
-                  return "T";
-                case BillionStr:
-                  return "B";
-
-                case MillionStr:
-                  return "M";
-
-                default:
-                  break;
-              }
-            };
-
-            const formatSpecifier = () => {
-              const has3digits = graphData.find((record) => record.value >= 95);
-              if (has3digits) {
-                return "($.0f";
-              }
-              return "($.1f";
-            };
-
-            return d3
-              .formatLocale({ currency: ["$", prefix()] })
-              .format([formatSpecifier()]);
-          }
-
-          if (indicatorInfo === totalPopulation) {
-            const unit = graphData[0].maxValue;
-
-            const specifier = () => {
-              if (graphData[0].hasMillionFigure) {
-                return "($.1f";
-              }
-              return "($.0f";
-            };
-
-            if (unit) {
-              return d3
-                .formatLocale({ currency: ["", "B"] })
-                .format([specifier()]);
-            }
-            return d3.format(["(.1s"]);
-          }
-        };
-
         return g
           .attr("transform", `translate(${margin.left},0)`)
-          .call(d3.axisLeft(y).ticks().tickFormat(renderTickText()))
+          .call(
+            d3
+              .axisLeft(y)
+              .ticks()
+              .tickFormat(
+                yAxisTickFormat(indicatorInfo, indicatorUnit, graphData)
+              )
+          )
           .call((g) => g.select(".domain").remove())
           .call((g) =>
             g
@@ -188,18 +202,42 @@ const LineChart = (props) => {
       svg.append("g").call(yAxis);
 
       svg
+        .append("g")
+        .selectAll("circle")
+        .data(graphData)
+        .join("circle")
+        .attr(
+          "id",
+          (d) => `${id}-circle-${new Date(d[xAxisLabel]).getUTCFullYear()}`
+        )
+        .attr("fill", (d) => handleCircleFill(d))
+        .attr("cx", (d) => x(new Date(d[xAxisLabel]).getUTCFullYear()))
+        .attr("cy", (d) => (d[yValue] === noData ? y(meanValue) : y(d[yValue])))
+        .attr("r", 3)
+        .attr("title", (d) =>
+          handleTooltipTitle(d, indicatorInfo, yValue, xAxisLabel)
+        );
+
+      svg
         .append("path")
         .datum(graphData.filter(line.defined()))
         .attr("stroke", "#ccc")
         .attr("stroke-width", 1.5)
         .attr("d", line);
 
-      return svg
+      svg
         .append("path")
         .datum(graphData)
         .attr("stroke", color)
-        .attr("stroke-width", 1.5)
+        .attr("stroke-width", 2)
         .attr("d", line);
+
+      const tooltip = d3.select(`[id="${id}-line-tooltip"]`);
+
+      svg.on("touchmove mousemove", (e) => handleMouseOver(e, x, tooltip));
+      svg.on("touchend mouseleave", () => tooltip.call(callout, null));
+
+      return setGraphRendered(true);
     },
     [
       yValue,
@@ -207,9 +245,9 @@ const LineChart = (props) => {
       height,
       width,
       xAxisLabel,
-      gdpTotalinUSD,
       indicatorInfo,
-      totalPopulation,
+      indicatorUnit,
+      id,
     ]
   );
 
@@ -219,7 +257,10 @@ const LineChart = (props) => {
   }, [orderData, renderGraph]);
 
   return (
-    <svg ref={svgRef} x="0" y="0" style={{ width: "100%", height: "100%" }} />
+    <>
+      <svg ref={svgRef} x="0" y="0" style={{ width: "100%", height: "100%" }} />
+      {renderTooltip()}
+    </>
   );
 };
 
