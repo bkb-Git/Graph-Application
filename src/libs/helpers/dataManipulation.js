@@ -17,240 +17,223 @@ import {
   totalLabourForce,
   totalPopulation,
 } from "../../Constants/indicators";
-import {
-  trillion,
-  billion,
-  million,
-  oneHundredThousand,
-} from "../../Constants/values";
+import { trillion, billion, million, oneHundredThousand } from "../../Constants/values";
 
-const sortData = (data, setGraphData, orderData, inModal, indicatorInfo) => {
+const sortData = (data, setGraphData, orderData, inModal, indicatorInfo, isDesktopOrTablet, setGraphDataUpdating) => {
   const { order, page } = orderData;
-  const index = { stop: 21, start: 0, next: 20 };
+  const indexes = isDesktopOrTablet ? { stop: 21, next: 20 } : { stop: 11, next: 10 };
+  const pagination = { stop: indexes.stop, start: 0, next: indexes.next };
   let finalData;
 
   const handleValue = (value, divider) => {
     if (value === null) {
       return noData;
-    } else if (divider) {
+    }
+    if (divider) {
       return value / divider;
     }
     return value;
   };
 
-  const convertGDPfigures = (finalData) => {
-    const hasTrillion = finalData.find((record) => {
-      const value = record.value;
-      let finalValue;
+  const convertValues = (val) => {
+    if (val < 0) {
+      return val * -1;
+    }
+    return val;
+  };
 
-      value < 0 ? (finalValue = value * -1) : (finalValue = value);
-
-      return finalValue >= trillion;
-    });
+  const convertGDPfigures = (dataToConvert) => {
+    const hasTrillion = dataToConvert.find((record) => convertValues(record.value) >= trillion);
 
     if (hasTrillion) {
-      const hasBillionValue = finalData.find((record) => {
-        const value = record.value;
-        let finalValue;
+      const hasBillionValue = dataToConvert.find((record) => {
+        const { value } = record;
+        const finalValue = convertValues(value);
 
-        value < 0 ? (finalValue = value * -1) : (finalValue = value);
         return finalValue < trillion && finalValue >= billion;
       });
 
-      return finalData.map((record) => {
+      return dataToConvert.map((record) => {
         return {
           ...record,
           value: handleValue(record.value, trillion),
           maxValue: TrillionStr,
-          hasBillionFigure: hasBillionValue ? true : false,
+          hasBillionFigure: hasBillionValue,
         };
       });
     }
 
-    const hasBillion = finalData.find((record) => {
-      const value = record.value;
-      let finalValue;
-
-      value < 0 ? (finalValue = value * -1) : (finalValue = value);
-      return finalValue >= billion;
-    });
+    const hasBillion = dataToConvert.find((record) => convertValues(record.value) >= billion);
 
     if (hasBillion) {
-      const hasMillionValue = finalData.find((record) => {
-        const value = record.value;
-        let finalValue;
-
-        value < 0 ? (finalValue = value * -1) : (finalValue = value);
+      const hasMillionValue = dataToConvert.find((record) => {
+        const { value } = record;
+        const finalValue = convertValues(value);
 
         return finalValue < billion && finalValue >= million;
       });
 
-      return finalData.map((record) => {
+      return dataToConvert.map((record) => {
         return {
           ...record,
           value: handleValue(record.value, billion),
           maxValue: BillionStr,
-          hasMillionFigure: hasMillionValue ? true : false,
+          hasMillionFigure: hasMillionValue,
         };
       });
     }
 
-    const hasMillion = finalData.find((record) => {
-      const value = record.value;
-      let finalValue;
+    const hasMillion = dataToConvert.find((record) => {
+      const { value } = record;
+      const finalValue = convertValues(value);
 
-      value < 0 ? (finalValue = value * -1) : (finalValue = value);
       return finalValue >= million;
     });
 
     if (hasMillion) {
-      const figureLessThanMillion = finalData.find((record) => {
-        const value = record.value;
-        let finalValue;
+      const figureLessThanMillion = dataToConvert.find((record) => {
+        const { value } = record;
+        const finalValue = convertValues(value);
 
-        value < 0 ? (finalValue = value * -1) : (finalValue = value);
         return finalValue < million && finalValue !== 0;
       });
 
-      return finalData.map((record) => {
+      return dataToConvert.map((record) => {
         return {
           ...record,
           value: handleValue(record.value, million),
           maxValue: MillionStr,
-          hasFigureLessThanMillion: figureLessThanMillion ? true : false,
+          hasFigureLessThanMillion: figureLessThanMillion,
         };
       });
     }
 
-    return finalData;
+    return dataToConvert;
   };
 
-  const convertPopulationFigures = (finalData) => {
-    const hasBillion = finalData.find((record) => {
-      const value = record.value;
-      let finalValue;
+  const convertPopulationFigures = (dataToConvert) => {
+    const hasBillion = dataToConvert.find((record) => {
+      const { value } = record;
+      const finalValue = convertValues(value);
 
-      value < 0 ? (finalValue = value * -1) : (finalValue = value);
       return finalValue >= billion;
     });
 
     if (hasBillion) {
-      const hasMillionValue = finalData.find((record) => {
-        const value = record.value;
-        let finalValue;
-
-        value < 0 ? (finalValue = value * -1) : (finalValue = value);
+      const hasMillionValue = dataToConvert.find((record) => {
+        const { value } = record;
+        const finalValue = convertValues(value);
 
         return finalValue < billion && finalValue >= million;
       });
 
-      return finalData.map((record) => {
+      return dataToConvert.map((record) => {
         return {
           ...record,
           value: handleValue(record.value, billion),
           maxValue: BillionStr,
-          hasMillionFigure: hasMillionValue ? true : false,
+          hasMillionFigure: hasMillionValue,
         };
       });
     }
 
-    const hasMillion = finalData.find((record) => {
-      const value = record.value;
-      let finalValue;
+    const hasMillion = dataToConvert.find((record) => {
+      const { value } = record;
+      const finalValue = convertValues(value);
 
-      value < 0 ? (finalValue = value * -1) : (finalValue = value);
       return finalValue >= million;
     });
 
     if (hasMillion) {
-      const figureLessThanMillion = finalData.find(
-        (record) => record.value < million && record.value > 0
-      );
+      const figureLessThanMillion = dataToConvert.find((record) => record.value < million && record.value > 0);
 
-      return finalData.map((record) => {
+      return dataToConvert.map((record) => {
         return {
           ...record,
           value: handleValue(record.value, million),
           maxValue: MillionStr,
-          hasFigureLessThanMillion: figureLessThanMillion ? true : false,
+          hasFigureLessThanMillion: figureLessThanMillion,
         };
       });
     }
 
-    const hasOneHundredThousand = finalData.find((record) => {
-      const value = record.value;
-      let finalValue;
+    const hasOneHundredThousand = dataToConvert.find((record) => {
+      const { value } = record;
+      const finalValue = convertValues(value);
 
-      value < 0 ? (finalValue = value * -1) : (finalValue = value);
       return finalValue >= oneHundredThousand;
     });
 
     if (hasOneHundredThousand) {
-      const figureLessThanOneHundredThousand = finalData.find((record) => {
-        const value = record.value;
-        let finalValue;
+      const figureLessThanOneHundredThousand = dataToConvert.find((record) => {
+        const { value } = record;
+        const finalValue = convertValues(value);
 
-        value < 0 ? (finalValue = value * -1) : (finalValue = value);
         return finalValue < oneHundredThousand && finalValue > 0;
       });
 
-      return finalData.map((record) => {
+      return dataToConvert.map((record) => {
         return {
           ...record,
           value: handleValue(record.value),
           maxValue: oneHundredThousandStr,
-          hasFigureLessThanOneHundredThousand: figureLessThanOneHundredThousand
-            ? true
-            : false,
-        };
-      });
-    } else {
-      return finalData.map((record) => {
-        return {
-          ...record,
-          value: handleValue(record.value),
-          maxValue: oneHundredThousandStr,
-          hasFigureLessThanOneHundredThousand: true,
+          hasFigureLessThanOneHundredThousand: figureLessThanOneHundredThousand,
         };
       });
     }
-  };
 
-  const convertDefaultFigures = (finalData) => {
-    return finalData.map((record) => {
+    return dataToConvert.map((record) => {
       return {
         ...record,
+        value: handleValue(record.value),
+        maxValue: oneHundredThousandStr,
+        hasFigureLessThanOneHundredThousand: true,
+      };
+    });
+  };
+
+  const convertDefaultFigures = (dataToConvert) => {
+    return dataToConvert.map((record) => {
+      return {
+        ...record,
+        maxValue: oneHundredThousandStr,
         value: handleValue(record.value),
       };
     });
   };
 
-  switch (page) {
-    case 0:
-      finalData = data.slice(index.start, index.stop);
-      break;
-    case 1:
-      finalData = data.slice(index.stop - 1, index.stop + index.next);
-      break;
-    case 2:
-      finalData = data.slice(index.next * 2, index.stop + index.next * 2);
-      break;
-    default:
-      finalData = data;
-  }
-
   switch (order) {
     case dateAscendingOrder:
-      finalData = finalData.sort((a, b) => a.date - b.date);
+      finalData = data.sort((a, b) => a.date - b.date);
       break;
     case dateDescendingOrder:
-      finalData = finalData.sort((a, b) => b.date - a.date);
+      finalData = data.sort((a, b) => b.date - a.date);
       break;
     case valueAscendingOrder:
-      finalData = finalData.sort((a, b) => a.value - b.value);
+      finalData = data.sort((a, b) => a.value - b.value);
       break;
     case valueDescendingOrder:
-      finalData = finalData.sort((a, b) => b.value - a.value);
+      finalData = data.sort((a, b) => b.value - a.value);
+      break;
+    default:
+      break;
+  }
+
+  switch (page) {
+    case 0:
+      finalData = finalData.slice(pagination.start, pagination.stop);
+      break;
+    case 1:
+      finalData = finalData.slice(pagination.next, pagination.stop + pagination.next);
+      break;
+    case 2:
+      finalData = finalData.slice(pagination.next * 2, pagination.stop + pagination.next * 2);
+      break;
+    case 3:
+      finalData = finalData.slice(pagination.next * 3, pagination.stop + pagination.next * 3);
+      break;
+    case 4:
+      finalData = finalData.slice(pagination.next * 4, pagination.stop + pagination.next * 4);
       break;
     default:
       break;
@@ -261,7 +244,6 @@ const sortData = (data, setGraphData, orderData, inModal, indicatorInfo) => {
     case gdpTotalinUSD:
       finalData = convertGDPfigures(finalData);
       break;
-
     case totalPopulation:
     case totalLabourForce:
     case netMigration:
@@ -272,7 +254,8 @@ const sortData = (data, setGraphData, orderData, inModal, indicatorInfo) => {
       break;
   }
 
-  return setGraphData(finalData);
+  setGraphData(finalData);
+  return setGraphDataUpdating(false);
 };
 
-export { sortData };
+export default sortData;

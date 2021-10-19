@@ -1,34 +1,33 @@
 import * as d3 from "d3";
 
 import {
+  annualConsumerPriceInflation,
   currentAccountBalance,
+  gdpAnnualGrowth,
   gdpPerCapita,
   gdpTotalinUSD,
-  landArea,
   netMigration,
+  populationGrowth,
   totalLabourForce,
   totalPopulation,
+  totalUnemployment,
 } from "../../Constants/indicators";
-import {
-  BillionStr,
-  MillionStr,
-  noData,
-  oneHundredThousandStr,
-  TrillionStr,
-} from "../../Constants/keywords";
+import { BillionStr, MillionStr, noData, oneHundredThousandStr, TrillionStr } from "../../Constants/keywords";
 
 const xAxisLabelFormat = (data, index, axisLabel) => {
   const tickLabel = data[index][axisLabel];
-  const parsedInt = parseInt(data[index][axisLabel]);
+  const parsedInt = parseInt(data[index][axisLabel], 10);
 
   if (index === 0) {
     return tickLabel;
-  } else if (parsedInt < 2000) {
+  }
+  if (parsedInt < 2000) {
     const tickStr = tickLabel.split("");
     tickStr.splice(0, 2, " '' ");
 
     return tickStr.join("");
-  } else if (parsedInt === 2000) {
+  }
+  if (parsedInt === 2000) {
     return tickLabel;
   }
 
@@ -68,10 +67,8 @@ const handleTooltipTitle = (data, indicatorInfo, yValue, xAxisLabel) => {
           default:
             return oneHundredThousandStr;
         }
-      case landArea:
-        return `sq.km`;
       default:
-        break;
+        return null;
     }
   };
 
@@ -86,10 +83,11 @@ const handleTooltipTitle = (data, indicatorInfo, yValue, xAxisLabel) => {
     const renderPopulationValues = () => {
       if (data[yValue] === noData) {
         return "No Data";
-      } else if (data.maxValue === oneHundredThousandStr) {
-        return `${d3.format([".0s"])(data[yValue])} ${suffix()}`;
       }
-      return `${d3.format([".1s"])(data[yValue])} ${suffix()}`;
+      if (data.maxValue === oneHundredThousandStr) {
+        return `${d3.format([".1s"])(data[yValue])} ${suffix()}`;
+      }
+      return `${d3.format([".1f"])(data[yValue])} ${suffix()}`;
     };
 
     switch (indicatorInfo) {
@@ -101,8 +99,6 @@ const handleTooltipTitle = (data, indicatorInfo, yValue, xAxisLabel) => {
       case totalLabourForce:
       case netMigration:
         return renderPopulationValues();
-      case landArea:
-        return `${d3.format([".0f"])(data[yValue])} sq.km`;
       default:
         if (data[yValue] === noData) {
           return noData;
@@ -118,6 +114,13 @@ const handleTooltipTitle = (data, indicatorInfo, yValue, xAxisLabel) => {
 const yAxisTickFormat = (indicatorInfo, indicatorUnit, graphData) => {
   const largestFigure = graphData[0].maxValue;
 
+  const convertValues = (val) => {
+    if (val < 0) {
+      return val * -1;
+    }
+    return val;
+  };
+
   const renderSuffix = () => {
     switch (largestFigure) {
       case TrillionStr:
@@ -129,16 +132,14 @@ const yAxisTickFormat = (indicatorInfo, indicatorUnit, graphData) => {
         return "M";
 
       default:
-        break;
+        return "";
     }
   };
 
   const renderFormatSpecifier = () => {
     const has3digits = graphData.find((record) => {
-      const value = record.value;
-      let finalValue;
-
-      value < 0 ? (finalValue = value * -1) : (finalValue = value);
+      const { value } = record;
+      const finalValue = convertValues(value);
 
       return finalValue >= 95;
     });
@@ -164,15 +165,14 @@ const yAxisTickFormat = (indicatorInfo, indicatorUnit, graphData) => {
       formatSpecifier = renderFormatSpecifier();
     }
 
-    return d3
-      .formatLocale({ currency: ["$", suffix] })
-      .format([formatSpecifier]);
+    return d3.formatLocale({ currency: ["$", suffix] }).format([formatSpecifier]);
   };
 
   const convertPopulationFigures = () => {
     if (largestFigure === BillionStr) {
       return d3.formatLocale({ currency: ["", "B"] }).format(["($.1f"]);
-    } else if (largestFigure === MillionStr) {
+    }
+    if (largestFigure === MillionStr) {
       return d3.formatLocale({ currency: ["", "M"] }).format(["($.1f"]);
     }
     return d3.format(["(.1s"]);
@@ -187,15 +187,30 @@ const yAxisTickFormat = (indicatorInfo, indicatorUnit, graphData) => {
     case totalLabourForce:
     case netMigration:
       return convertPopulationFigures();
-    case landArea:
-      return d3
-        .formatLocale({ currency: ["", indicatorUnit] })
-        .format(["($.0f"]);
     default:
-      return d3
-        .formatLocale({ currency: ["", indicatorUnit] })
-        .format(["($.0f"]);
+      return d3.formatLocale({ currency: ["", indicatorUnit] }).format(["($.0f"]);
   }
 };
 
-export { xAxisLabelFormat, handleTooltipTitle, yAxisTickFormat };
+const graphText = (indicatorInfo, graphData) => {
+  switch (indicatorInfo) {
+    case gdpTotalinUSD:
+    case currentAccountBalance:
+    case totalPopulation:
+    case totalLabourForce:
+    case netMigration:
+      return graphData[0].maxValue;
+    case populationGrowth:
+    case gdpAnnualGrowth:
+    case annualConsumerPriceInflation:
+      return "annual %";
+    case gdpPerCapita:
+      return "current US$";
+    case totalUnemployment:
+      return "% of total labour force";
+    default:
+      return "% of GDP";
+  }
+};
+
+export { xAxisLabelFormat, handleTooltipTitle, yAxisTickFormat, graphText };

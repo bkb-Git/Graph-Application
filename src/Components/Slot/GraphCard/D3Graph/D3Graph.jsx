@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 import usePrevious from "../../../../libs/helpers/usePrevious";
-import { sortData } from "../../../../libs/helpers/dataManipulation";
+import sortData from "../../../../libs/helpers/dataManipulation";
 
 import "./D3Graph.scss";
 import BarChart from "./BarChart";
@@ -11,10 +11,11 @@ import { BarChartStr } from "../../../../Constants/keywords";
 
 const D3Graph = (props) => {
   const {
-    dataForD3 = [],
+    dataForD3,
     axisLabels,
     inModal,
     id,
+    isDesktopOrLaptop,
     selectorData,
     fetchedObj,
     indicatorInfo,
@@ -25,9 +26,10 @@ const D3Graph = (props) => {
 
   const { fetched, setFetched } = fetchedObj;
 
-  const data = dataForD3.sort((a, b) => a.date - b.date);
+  // const data = dataForD3.sort((a, b) => a.date - b.date);
 
   const [graphData, setGraphData] = useState(null);
+  const [graphDataUpdating, setGraphDataUpdating] = useState(false);
   const [graphDimensions, setGraphDimensions] = useState({});
 
   const prevOrderData = usePrevious(orderData);
@@ -35,22 +37,48 @@ const D3Graph = (props) => {
   // sortData func. args (data,setGraphData,orderData,inModal,indicatorInfo)
 
   useEffect(() => {
+    setGraphDataUpdating(true);
     if (!inModal) {
       if (orderData.page !== prevOrderData?.page) {
-        return sortData(data, setGraphData, orderData, inModal, indicatorInfo);
-      } else if (orderData.page === 0) {
-        return sortData(data, setGraphData, orderData, inModal, indicatorInfo);
+        return sortData(
+          dataForD3,
+          setGraphData,
+          orderData,
+          inModal,
+          indicatorInfo,
+          isDesktopOrLaptop,
+          setGraphDataUpdating
+        );
+      }
+      if (orderData.page === 0) {
+        return sortData(
+          dataForD3,
+          setGraphData,
+          orderData,
+          inModal,
+          indicatorInfo,
+          isDesktopOrLaptop,
+          setGraphDataUpdating
+        );
       }
     }
-    return sortData(data, setGraphData, orderData, inModal, indicatorInfo);
-  }, [data, orderData, prevOrderData, indicatorInfo, inModal]);
+    return sortData(
+      dataForD3,
+      setGraphData,
+      orderData,
+      inModal,
+      indicatorInfo,
+      isDesktopOrLaptop,
+      setGraphDataUpdating
+    );
+  }, [dataForD3, orderData, prevOrderData, indicatorInfo, inModal, isDesktopOrLaptop]);
 
   useEffect(() => {
     const cardHeader = document.getElementById(`cardHeader-${id}`);
 
     if (!fetched.cardHeaderDimensionsFetched) {
       setTimeout(() => {
-        const height = cardHeader.getBoundingClientRect().height;
+        const { height } = cardHeader.getBoundingClientRect();
 
         setGraphDimensions({
           width: dimensions.width,
@@ -97,11 +125,7 @@ const D3Graph = (props) => {
     return lineGraph();
   };
 
-  return graphData && fetched.cardHeaderDimensionsFetched ? (
-    renderGraph()
-  ) : (
-    <Loader />
-  );
+  return !graphDataUpdating && graphData && fetched.cardHeaderDimensionsFetched ? renderGraph() : <Loader />;
 };
 
 export default D3Graph;

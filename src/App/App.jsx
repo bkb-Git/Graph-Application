@@ -1,5 +1,6 @@
-import MainPage from "../MainPage";
 import { BrowserRouter as Router } from "react-router-dom";
+import MainPage from "../MainPage";
+
 import "./App.scss";
 
 const App = () => {

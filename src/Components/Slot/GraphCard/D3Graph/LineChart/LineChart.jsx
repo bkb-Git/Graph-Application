@@ -1,11 +1,9 @@
+/* eslint-disable no-restricted-globals */
 import { useCallback, useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 
 import {
-  gdpTotalinUSD,
-  totalPopulation,
-} from "../../../../../Constants/indicators";
-import {
+  graphText,
   handleTooltipTitle,
   xAxisLabelFormat,
   yAxisTickFormat,
@@ -13,15 +11,7 @@ import {
 import { noData } from "../../../../../Constants/keywords";
 
 const LineChart = (props) => {
-  const {
-    axisLabels,
-    graphData,
-    dimensions,
-    id,
-    orderData,
-    indicatorInfo,
-    indicatorUnit,
-  } = props;
+  const { axisLabels, graphData, dimensions, id, orderData, indicatorInfo, indicatorUnit } = props;
 
   const { height, width } = dimensions;
   const { xAxisLabel, yValue } = axisLabels;
@@ -34,17 +24,9 @@ const LineChart = (props) => {
 
   const renderTooltip = () => {
     return (
-      <div
-        style={{ position: "fixed" }}
-        class="tooltip"
-        id={`${id}-line-tooltip`}
-        role="tooltip"
-      >
-        <div
-          class="tooltip-arrow"
-          style={{ transform: "translate(0, 125%)" }}
-        ></div>
-        <div class="tooltip-inner">Tooltip Here</div>
+      <div style={{ position: "fixed" }} className="tooltip" id={`${id}-line-tooltip`} role="tooltip">
+        <div className="tooltip-arrow" style={{ transform: "translate(0, 125%)" }} />
+        <div className="tooltip-inner">Tooltip Here</div>
       </div>
     );
   };
@@ -57,11 +39,9 @@ const LineChart = (props) => {
         .attr("stroke-linejoin", "round")
         .attr("stroke-linecap", "round");
 
-      const margin = { top: 20, right: 30, bottom: 30, left: 50 };
+      const margin = { top: 25, right: 30, bottom: 30, left: 45 };
 
-      const graphDataValues = graphData.filter(
-        (data) => typeof data.value === "number"
-      );
+      const graphDataValues = graphData.filter((data) => typeof data.value === "number");
       const minValue = d3.min(graphDataValues, (d) => d[yValue]);
 
       const meanValue = d3.mean(graphDataValues, (d) => d[yValue]);
@@ -74,16 +54,14 @@ const LineChart = (props) => {
       };
 
       const calcYStartPoint = () => {
-        const hasNegativeValue = graphDataValues.find(
-          (record) => record.value < 0
-        );
+        const hasNegativeValue = graphDataValues.find((record) => record.value < 0);
         if (hasNegativeValue) {
           return minValue;
         }
         return 0;
       };
 
-      const bisect = (mx, x) => {
+      const bisectGraph = (mx, x) => {
         const bisect = d3.bisector((d) => d.date).left;
 
         const date = x.invert(mx);
@@ -95,35 +73,30 @@ const LineChart = (props) => {
 
       const callout = (g, bisectedObj, tooltip) => {
         if (!bisectedObj) return g.style("display", "none");
-        const { date, value } = bisectedObj;
 
-        g.style("display", null)
-          .style("opacity", 1)
-          .style("pointer-events", "none");
+        g.style("display", null).style("opacity", 1).style("pointer-events", "none");
 
-        g.select(".tooltip-inner").html(tooltip);
+        return g.select(".tooltip-inner").html(tooltip);
       };
 
       const handleMouseOver = (event, x, tooltip) => {
-        const bisectedObj = bisect(d3.pointer(event, this)[0], x);
+        const bisectedObj = bisectGraph(d3.pointer(event, this)[0], x);
         const { date } = bisectedObj;
 
         const circleEl = d3.select(`[id="${id}-circle-${date}"]`);
         const tooltipData = circleEl.attr("title");
-        const dimensions = circleEl.node().getBoundingClientRect();
+        const circleElDimensions = circleEl.node().getBoundingClientRect();
 
         tooltip
           .style("transform", "translate(3%, -40%)")
-          .style("left", `${dimensions.x}px`)
-          .style("top", ` ${dimensions.y}px`)
+          .style("left", `${circleElDimensions.x}px`)
+          .style("top", ` ${circleElDimensions.y}px`)
           .call(callout, bisectedObj, tooltipData);
       };
 
       const x = d3
         .scaleUtc()
-        .domain(
-          d3.extent(graphData, (d) => new Date(d[xAxisLabel]).getUTCFullYear())
-        )
+        .domain(d3.extent(graphData, (d) => new Date(d[xAxisLabel]).getUTCFullYear()))
         .range([margin.left, width - margin.right]);
 
       const y = d3
@@ -134,68 +107,39 @@ const LineChart = (props) => {
 
       const line = d3
         .line()
-        .defined((d) => !isNaN(d.value))
+        .defined((d) => !isNaN(d[yValue]))
         .x((d) => x(new Date(d[xAxisLabel]).getUTCFullYear()))
         .y((d) => y(d[yValue]));
 
       const xAxis = (g) => {
-        return g
-          .attr("transform", `translate(0,${height - margin.bottom})`)
-          .call(
-            d3
-              .axisBottom(x)
-              .ticks(graphData.length - 1)
-              .tickFormat((d, i) => xAxisLabelFormat(graphData, i, xAxisLabel))
-              .tickSizeOuter(0)
-          );
+        return g.attr("transform", `translate(0,${height - margin.bottom})`).call(
+          d3
+            .axisBottom(x)
+            .ticks(graphData.length - 1)
+            .tickFormat((d, i) => xAxisLabelFormat(graphData, i, xAxisLabel))
+            .tickSizeOuter(0)
+        );
       };
 
       const yAxis = (g) => {
-        const renderText = () => {
-          if (indicatorInfo === gdpTotalinUSD) {
-            const unit = graphData[0].maxValue;
-            if (unit) {
-              return `${unit}`;
-            }
-            return `No Data`;
-          } else if (indicatorInfo === totalPopulation) {
-            const unit = graphData[0].maxValue
-              ? graphData[0].maxValue
-              : "Million";
-            return `${unit}`;
-          }
-        };
-
         return g
           .attr("transform", `translate(${margin.left},0)`)
-          .call(
-            d3
-              .axisLeft(y)
-              .ticks()
-              .tickFormat(
-                yAxisTickFormat(indicatorInfo, indicatorUnit, graphData)
-              )
-          )
-          .call((g) => g.select(".domain").remove())
-          .call((g) =>
-            g
+          .call(d3.axisLeft(y).ticks().tickFormat(yAxisTickFormat(indicatorInfo, indicatorUnit, graphData)))
+          .call((graphic) => graphic.select(".domain").remove())
+          .call((graphic) =>
+            graphic
               .select(".tick:last-of-type text")
               .clone()
               .attr("x", 3)
               .attr("y", -10)
               .attr("text-anchor", "start")
               .attr("font-weight", "bold")
-              .text(renderText())
+              .text(graphText(indicatorInfo, graphData))
           );
       };
 
       svg.selectAll("g").transition().duration(50).style("opacity", 0).remove();
-      svg
-        .selectAll("path")
-        .transition()
-        .duration(50)
-        .style("opacity", 0)
-        .remove();
+      svg.selectAll("path").transition().duration(50).style("opacity", 0).remove();
 
       svg.append("g").call(xAxis);
 
@@ -206,31 +150,21 @@ const LineChart = (props) => {
         .selectAll("circle")
         .data(graphData)
         .join("circle")
-        .attr(
-          "id",
-          (d) => `${id}-circle-${new Date(d[xAxisLabel]).getUTCFullYear()}`
-        )
+        .attr("id", (d) => `${id}-circle-${new Date(d[xAxisLabel]).getUTCFullYear()}`)
         .attr("fill", (d) => handleCircleFill(d))
         .attr("cx", (d) => x(new Date(d[xAxisLabel]).getUTCFullYear()))
         .attr("cy", (d) => (d[yValue] === noData ? y(meanValue) : y(d[yValue])))
         .attr("r", 3)
-        .attr("title", (d) =>
-          handleTooltipTitle(d, indicatorInfo, yValue, xAxisLabel)
-        );
+        .attr("title", (d) => handleTooltipTitle(d, indicatorInfo, yValue, xAxisLabel));
 
       svg
         .append("path")
         .datum(graphData.filter(line.defined()))
         .attr("stroke", "#ccc")
-        .attr("stroke-width", 1.5)
-        .attr("d", line);
-
-      svg
-        .append("path")
-        .datum(graphData)
-        .attr("stroke", color)
         .attr("stroke-width", 2)
         .attr("d", line);
+
+      svg.append("path").datum(graphData).attr("stroke", color).attr("stroke-width", 2).attr("d", line);
 
       const tooltip = d3.select(`[id="${id}-line-tooltip"]`);
 
@@ -239,16 +173,7 @@ const LineChart = (props) => {
 
       return setGraphRendered(true);
     },
-    [
-      yValue,
-      graphData,
-      height,
-      width,
-      xAxisLabel,
-      indicatorInfo,
-      indicatorUnit,
-      id,
-    ]
+    [yValue, graphData, height, width, xAxisLabel, indicatorInfo, indicatorUnit, id]
   );
 
   useEffect(() => {

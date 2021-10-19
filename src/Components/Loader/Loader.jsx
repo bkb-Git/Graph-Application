@@ -1,11 +1,8 @@
 const Loader = () => {
   return (
-    <div
-      class="d-flex text-primary justify-content-center align-items-center"
-      style={{ height: "100%" }}
-    >
-      <div class="spinner-border" role="status">
-        <span class="visually-hidden">Loading...</span>
+    <div className="d-flex text-primary justify-content-center align-items-center" style={{ height: "100%" }}>
+      <div className="spinner-border" role="status">
+        <span className="visually-hidden">Loading...</span>
       </div>
     </div>
   );

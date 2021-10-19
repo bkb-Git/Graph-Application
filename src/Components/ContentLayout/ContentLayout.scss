@@ -1,5 +1,6 @@
 .content-layout {
   max-height: 100%;
+
   &--no-graph {
     margin: 15px 0;
     margin-top: 15px !important;
@@ -25,5 +26,12 @@
 
   i {
     width: 3rem;
+  }
+}
+
+@media only screen and (max-width: 1224px) {
+  .content-layout {
+    height: 90%;
+    overflow-y: scroll;
   }
 }
