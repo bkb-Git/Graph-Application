@@ -1,12 +1,16 @@
 import * as d3 from "d3";
 
 import {
+  annualConsumerPriceInflation,
   currentAccountBalance,
+  gdpAnnualGrowth,
   gdpPerCapita,
   gdpTotalinUSD,
   netMigration,
+  populationGrowth,
   totalLabourForce,
   totalPopulation,
+  totalUnemployment,
 } from "../../Constants/indicators";
 import { BillionStr, MillionStr, noData, oneHundredThousandStr, TrillionStr } from "../../Constants/keywords";
 
@@ -188,4 +192,25 @@ const yAxisTickFormat = (indicatorInfo, indicatorUnit, graphData) => {
   }
 };
 
-export { xAxisLabelFormat, handleTooltipTitle, yAxisTickFormat };
+const graphText = (indicatorInfo, graphData) => {
+  switch (indicatorInfo) {
+    case gdpTotalinUSD:
+    case currentAccountBalance:
+    case totalPopulation:
+    case totalLabourForce:
+    case netMigration:
+      return graphData[0].maxValue;
+    case populationGrowth:
+    case gdpAnnualGrowth:
+    case annualConsumerPriceInflation:
+      return "annual %";
+    case gdpPerCapita:
+      return "current US$";
+    case totalUnemployment:
+      return "% of total labour force";
+    default:
+      return "% of GDP";
+  }
+};
+
+export { xAxisLabelFormat, handleTooltipTitle, yAxisTickFormat, graphText };

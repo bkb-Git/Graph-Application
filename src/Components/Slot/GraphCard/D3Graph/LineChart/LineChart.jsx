@@ -2,8 +2,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 
-import { gdpTotalinUSD, totalPopulation } from "../../../../../Constants/indicators";
-import { handleTooltipTitle, xAxisLabelFormat, yAxisTickFormat } from "../../../../../libs/helpers/graphFormatting";
+import {
+  graphText,
+  handleTooltipTitle,
+  xAxisLabelFormat,
+  yAxisTickFormat,
+} from "../../../../../libs/helpers/graphFormatting";
 import { noData } from "../../../../../Constants/keywords";
 
 const LineChart = (props) => {
@@ -35,7 +39,7 @@ const LineChart = (props) => {
         .attr("stroke-linejoin", "round")
         .attr("stroke-linecap", "round");
 
-      const margin = { top: 20, right: 30, bottom: 30, left: 50 };
+      const margin = { top: 25, right: 30, bottom: 30, left: 45 };
 
       const graphDataValues = graphData.filter((data) => typeof data.value === "number");
       const minValue = d3.min(graphDataValues, (d) => d[yValue]);
@@ -118,21 +122,6 @@ const LineChart = (props) => {
       };
 
       const yAxis = (g) => {
-        const renderText = () => {
-          if (indicatorInfo === gdpTotalinUSD) {
-            const unit = graphData[0].maxValue;
-            if (unit) {
-              return `${unit}`;
-            }
-            return `No Data`;
-          }
-          if (indicatorInfo === totalPopulation) {
-            const unit = graphData[0].maxValue ? graphData[0].maxValue : "Million";
-            return `${unit}`;
-          }
-          return null;
-        };
-
         return g
           .attr("transform", `translate(${margin.left},0)`)
           .call(d3.axisLeft(y).ticks().tickFormat(yAxisTickFormat(indicatorInfo, indicatorUnit, graphData)))
@@ -145,7 +134,7 @@ const LineChart = (props) => {
               .attr("y", -10)
               .attr("text-anchor", "start")
               .attr("font-weight", "bold")
-              .text(renderText())
+              .text(graphText(indicatorInfo, graphData))
           );
       };
 
@@ -174,8 +163,6 @@ const LineChart = (props) => {
         .attr("stroke", "#ccc")
         .attr("stroke-width", 2)
         .attr("d", line);
-
-      console.log(graphData);
 
       svg.append("path").datum(graphData).attr("stroke", color).attr("stroke-width", 2).attr("d", line);
 

@@ -239,8 +239,6 @@ const sortData = (data, setGraphData, orderData, inModal, indicatorInfo, isDeskt
       break;
   }
 
-  console.log(finalData);
-
   switch (indicatorInfo) {
     case currentAccountBalance:
     case gdpTotalinUSD:
@@ -255,8 +253,6 @@ const sortData = (data, setGraphData, orderData, inModal, indicatorInfo, isDeskt
       finalData = convertDefaultFigures(finalData);
       break;
   }
-
-  console.log(finalData);
 
   setGraphData(finalData);
   return setGraphDataUpdating(false);

@@ -36,7 +36,7 @@ const GraphCard = (props) => {
 
   const { countryCode, indicator, countryTitle, indicatorTitle, indicatorUnit, chart } = data;
 
-  // Fetch data
+  // Fetch indicator data by country
   useEffect(() => {
     fetch(WBIndicatorByCountry(countryCode, indicator))
       .then((response) => response.json())

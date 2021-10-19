@@ -3,8 +3,12 @@ import * as d3 from "d3";
 import { Tooltip } from "bootstrap";
 
 import { noData } from "../../../../../Constants/keywords";
-import { gdpTotalinUSD, totalPopulation } from "../../../../../Constants/indicators";
-import { handleTooltipTitle, xAxisLabelFormat, yAxisTickFormat } from "../../../../../libs/helpers/graphFormatting";
+import {
+  graphText,
+  handleTooltipTitle,
+  xAxisLabelFormat,
+  yAxisTickFormat,
+} from "../../../../../libs/helpers/graphFormatting";
 
 const BarChart = (props) => {
   const { axisLabels, graphData, id, dimensions, indicatorInfo, orderData, indicatorUnit } = props;
@@ -90,23 +94,6 @@ const BarChart = (props) => {
       };
 
       const yAxis = (g) => {
-        const renderText = () => {
-          if (indicatorInfo === gdpTotalinUSD) {
-            const unit = graphData[0].maxValue;
-
-            if (unit) {
-              return `${unit}`;
-            }
-            return `No Data`;
-          }
-
-          if (indicatorInfo === totalPopulation) {
-            const unit = graphData[0].maxValue ? graphData[0].maxValue : "Million";
-            return `${unit}`;
-          }
-          return "";
-        };
-
         return g
           .attr("transform", `translate(${margin.left},0)`)
           .call(d3.axisLeft(y).ticks().tickFormat(yAxisTickFormat(indicatorInfo, indicatorUnit, graphData)))
@@ -114,11 +101,12 @@ const BarChart = (props) => {
           .call((graphic) =>
             graphic
               .append("text")
-              .attr("x", -35)
-              .attr("y", 10)
+              .attr("x", 3)
+              .attr("y", 18)
               .attr("fill", "currentColor")
+              .style("font-weight", "bolder")
               .attr("text-anchor", "start")
-              .text(renderText())
+              .text(graphText(indicatorInfo, graphData))
           );
       };
 
