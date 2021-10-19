@@ -1,0 +1,37 @@
+.content-layout {
+  max-height: 100%;
+
+  &--no-graph {
+    margin: 15px 0;
+    margin-top: 15px !important;
+  }
+  &__card {
+    height: 100%;
+    width: 100%;
+    padding: 5px;
+    border-radius: 0.8rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+}
+
+.add-graph-button {
+  border-radius: 50% !important;
+  width: 5rem;
+  height: 5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  i {
+    width: 3rem;
+  }
+}
+
+@media only screen and (max-width: 1224px) {
+  .content-layout {
+    height: 90%;
+    overflow-y: scroll;
+  }
+}

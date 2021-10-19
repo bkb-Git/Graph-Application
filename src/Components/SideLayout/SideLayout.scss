@@ -1,0 +1,74 @@
+.sidelayout {
+  margin: 15px 0;
+  height: calc(100% - 30px);
+  margin-top: 15px !important;
+
+  &-header {
+    h1 {
+      position: relative;
+      left: 30%;
+      margin: 0;
+    }
+  }
+
+  &-burger-button {
+    button {
+      i {
+        color: #5902ab;
+        font-size: 2rem;
+      }
+
+      &:hover {
+        & i {
+          color: white;
+        }
+      }
+    }
+  }
+}
+
+.sidelayout__card {
+  height: 100%;
+  border-radius: 0.8rem;
+
+  &__body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+  }
+
+  .list-group {
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    overflow-y: auto;
+
+    &::-webkit-scrollbar {
+      width: 5px;
+
+      &-track {
+        background: transparent;
+      }
+
+      &-thumb {
+        background: #5902ab;
+        border-radius: 5px;
+        border: 0.8px solid white;
+        &:hover {
+          background: #555;
+        }
+      }
+    }
+  }
+}
+
+@media only screen and (max-width: 650px) {
+  .sidelayout {
+    &-header {
+      h1 {
+        left: 20%;
+      }
+    }
+  }
+}
