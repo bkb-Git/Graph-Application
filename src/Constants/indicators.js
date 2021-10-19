@@ -1,7 +1,6 @@
 const indicators = [
   { name: "totalPopulation", id: "SP.POP.TOTL", unit: "" },
   { name: "gdpTotalinUSD", id: "NY.GDP.MKTP.CD", unit: "" },
-  { name: "landArea", id: "AG.LND.TOTL.K2", unit: "km<sup>2</sup>" },
   { name: "populationGrowth", id: "SP.POP.GROW", unit: "%" },
   { name: "centralGovernmentDebtTotal", id: "GC.DOD.TOTL.GD.ZS", unit: "%" },
   { name: "gdpPerCapita", id: "NY.GDP.PCAP.CD", unit: "" },
@@ -19,7 +18,6 @@ const indicators = [
 
 const totalPopulation = "SP.POP.TOTL";
 const gdpTotalinUSD = "NY.GDP.MKTP.CD";
-const landArea = "AG.LND.TOTL.K2";
 const populationGrowth = "SP.POP.GROW";
 const centralGovernmentDebtTotal = "GC.DOD.TOTL.GD.ZS";
 const gdpPerCapita = "NY.GDP.PCAP.CD";
@@ -44,7 +42,6 @@ export {
   gdpAnnualGrowth,
   netMigration,
   currentAccountBalance,
-  landArea,
   populationGrowth,
   annualConsumerPriceInflation,
   taxRevenue,

@@ -17,7 +17,7 @@ import D3Graph from "./D3Graph";
 import Loader from "../../Loader";
 
 const GraphCard = (props) => {
-  const { deleteCard, data, graphCardId } = props;
+  const { deleteCard, data, graphCardId, isDesktopOrLaptop } = props;
   const [fetched, setFetched] = useState({
     dataFetched: false,
     graphCardDimensionsFetched: false,
@@ -34,23 +34,16 @@ const GraphCard = (props) => {
     order: dateAscendingOrder,
   });
 
-  const {
-    countryCode,
-    indicator,
-    countryTitle,
-    indicatorTitle,
-    indicatorUnit,
-    chart,
-  } = data;
+  const { countryCode, indicator, countryTitle, indicatorTitle, indicatorUnit, chart } = data;
 
   // Fetch data
   useEffect(() => {
     fetch(WBIndicatorByCountry(countryCode, indicator))
       .then((response) => response.json())
-      .then((data) => {
-        if (data !== null) {
+      .then((responseData) => {
+        if (responseData !== null) {
           setGraphData(
-            data[1].map((item) => {
+            responseData[1].map((item) => {
               return {
                 date: item.date,
                 value: item.value,
@@ -60,24 +53,38 @@ const GraphCard = (props) => {
           );
           return setFetched({ dimensionsFetched: false, dataFetched: true });
         }
+        return responseData;
       })
       .catch((error) => {
         console.log(error);
       });
   }, [countryCode, indicator]);
 
-  //Retrieve Graph card dimensions && set tooltips
+  // Retrieve Graph card dimensions && set tooltips
   useEffect(() => {
     const graphCard = document.getElementById(graphCardId);
 
+    const pageNo = () => {
+      if (!isDesktopOrLaptop) {
+        return 0;
+      }
+      if (modalOpen) {
+        return null;
+      }
+      return 0;
+    };
+
+    setOrderData((prev) => {
+      return { page: pageNo(), order: prev.order };
+    });
+
     if (modalOpen) {
       if (!fetched.graphCardDimensionsFetched) {
-        const modal = document.getElementById(`modal-${graphCardId}`)
-          .childNodes[0];
+        const modal = document.getElementById(`modal-${graphCardId}`).childNodes[0];
 
         return setTimeout(() => {
-          const width = modal.getBoundingClientRect().width;
-          const height = modal.getBoundingClientRect().height;
+          const { width, height } = modal.getBoundingClientRect();
+
           setGraphCardDimensions({
             width,
             height,
@@ -85,10 +92,12 @@ const GraphCard = (props) => {
           return setFetched({ ...fetched, graphCardDimensionsFetched: true });
         }, 200);
       }
-    } else if (!fetched.graphCardDimensionsFetched) {
+      return null;
+    }
+
+    if (!fetched.graphCardDimensionsFetched) {
       return setTimeout(() => {
-        const width = graphCard.getBoundingClientRect().width;
-        const height = graphCard.getBoundingClientRect().height;
+        const { width, height } = graphCard.getBoundingClientRect();
 
         setGraphCardDimensions({
           width,
@@ -99,19 +108,15 @@ const GraphCard = (props) => {
     }
 
     if (fetched.dataFetched && !modalOpen) {
-      const prevButton = document.getElementById(
-        `${graphCardId}-button-nav-prev`
-      );
-      const nextButton = document.getElementById(
-        `${graphCardId}-button-nav-next`
-      );
+      const prevButton = document.getElementById(`${graphCardId}-button-nav-prev`);
+      const nextButton = document.getElementById(`${graphCardId}-button-nav-next`);
 
       const buttonTooltip = () => {
+        // eslint-disable-next-line no-new
         new Tooltip(prevButton, {
           title: "Previous",
           animation: true,
           placement: "left",
-          delay: { show: 50, hide: 100 },
           trigger: "hover focus",
         });
 
@@ -126,10 +131,11 @@ const GraphCard = (props) => {
 
       return buttonTooltip();
     }
+    return null;
   }, [graphCardId, modalOpen, fetched]);
 
   const renderCardActions = () => {
-    const handleToggleFullscreenOff = (e) => {
+    const handleToggleFullscreenOff = () => {
       setOrderData({ ...orderData, page: 0 });
       setFetched({
         ...fetched,
@@ -139,13 +145,10 @@ const GraphCard = (props) => {
       return setModalOpen(false);
     };
 
-    const handleToggleFullscreenOn = (e) => {
-      const graphModal = new Modal(
-        document.getElementById(`modal-${graphCardId}`),
-        {
-          backdrop: "static",
-        }
-      );
+    const handleToggleFullscreenOn = () => {
+      const graphModal = new Modal(document.getElementById(`modal-${graphCardId}`), {
+        backdrop: "static",
+      });
 
       setOrderData({ ...orderData, page: 3 });
       setFetched({
@@ -164,8 +167,10 @@ const GraphCard = (props) => {
       const nextButton = `${graphCardId}-button-nav-next`;
       const prevButton = `${graphCardId}-button-nav-prev`;
 
+      const nextLimit = isDesktopOrLaptop ? 2 : 4;
+
       if (navButtonClicked === nextButton) {
-        if (orderData.page < 2) {
+        if (orderData.page < nextLimit) {
           return setOrderData((prev) => ({
             ...orderData,
             page: prev.page + 1,
@@ -179,16 +184,17 @@ const GraphCard = (props) => {
           }));
         }
       }
+      return null;
     };
 
     const handleSetOrder = (e) => {
-      const value = e.target.attributes.value.value;
+      const { value } = e.target.attributes.value;
 
       return setOrderData({ ...orderData, order: value });
     };
 
     const renderNavButtons = () => {
-      if (!modalOpen) {
+      if ((!modalOpen && isDesktopOrLaptop) || !isDesktopOrLaptop) {
         return (
           <>
             <button
@@ -197,7 +203,7 @@ const GraphCard = (props) => {
               onClick={(e) => handleGraphNavigation(e)}
               className="btn graph-card__actions__button graph-card__actions__button--pageNav"
             >
-              <i class="bi bi-arrow-left-square-fill" />
+              <i className="bi bi-arrow-left-square-fill" />
             </button>
             <button
               type="button"
@@ -205,11 +211,12 @@ const GraphCard = (props) => {
               onClick={(e) => handleGraphNavigation(e)}
               className="btn graph-card__actions__button graph-card__actions__button--pageNav"
             >
-              <i class="bi bi-arrow-right-square-fill" />
+              <i className="bi bi-arrow-right-square-fill" />
             </button>
           </>
         );
       }
+
       return null;
     };
 
@@ -221,10 +228,11 @@ const GraphCard = (props) => {
             onClick={handleToggleFullscreenOn}
             className="btn graph-card__actions__button graph-card__actions__button--fullscreen"
           >
-            <i class="bi bi-fullscreen" />
+            <i className="bi bi-fullscreen" />
           </button>
         );
       }
+      return null;
     };
 
     const renderCancelButton = () => {
@@ -235,14 +243,14 @@ const GraphCard = (props) => {
             className="btn graph-card__actions__button graph-card__actions__button--close"
             onClick={modalOpen ? handleToggleFullscreenOff : deleteCard}
           >
-            <i class="bi bi-x-lg" />
+            <i className="bi bi-x-lg" />
           </button>
         );
       }
       return (
         <button
           type="button"
-          class="btn-close"
+          className="btn-close"
           onClick={handleToggleFullscreenOff}
           data-bs-dismiss="modal"
           aria-label="Close"
@@ -266,26 +274,32 @@ const GraphCard = (props) => {
             id={`${graphCardId}-button-order`}
             className={`btn ${renderDisabled()} btn-primary graph-card__actions__button  graph-card__actions__button--order`}
           >
-            <i class="bi bi-bar-chart-fill"></i>
+            <i className="bi bi-bar-chart-fill" />
           </button>
           <ul
             className="dropdown-menu dropdown-menu-dark dropdown-menu-start"
             aria-labelledby={`${graphCardId}-button-order`}
           >
-            <li
+            <div
+              role="button"
               className="dropdown-item"
               value={dateAscendingOrder}
               onClick={(e) => handleSetOrder(e)}
+              onKeyUp={(e) => handleSetOrder(e)}
+              tabIndex={0}
             >
               Ascending Order
-            </li>
-            <li
+            </div>
+            <div
+              role="button"
               className="dropdown-item"
               value={dateDescendingOrder}
               onClick={(e) => handleSetOrder(e)}
+              onKeyUp={(e) => handleSetOrder(e)}
+              tabIndex={0}
             >
               Descending Order
-            </li>
+            </div>
           </ul>
         </div>
       );
@@ -303,12 +317,9 @@ const GraphCard = (props) => {
 
   const renderCardHeader = () => {
     return (
-      <div
-        id={`cardHeader-${graphCardId}`}
-        class="card-header graph-card__header"
-      >
-        <span class="badge graph-card__badge bg-primary ">{countryTitle}</span>
-        <h6 class="graph-card__heading text-center ">{indicatorTitle}</h6>
+      <div id={`cardHeader-${graphCardId}`} className="card-header graph-card__header">
+        <span className="badge graph-card__badge bg-primary ">{countryTitle}</span>
+        <h6 className="graph-card__heading text-center ">{indicatorTitle}</h6>
         <div className="graph-card__actions">{renderCardActions()}</div>
       </div>
     );
@@ -321,6 +332,7 @@ const GraphCard = (props) => {
         selectorData={data}
         indicatorInfo={indicator}
         indicatorUnit={indicatorUnit}
+        isDesktopOrLaptop={isDesktopOrLaptop}
         inModal={modalOpen}
         orderData={orderData}
         id={graphCardId}
@@ -345,15 +357,18 @@ const GraphCard = (props) => {
   };
 
   const renderModal = () => {
+    const modalSize = () => {
+      if (isDesktopOrLaptop) {
+        return "modal-xl";
+      }
+      return "modal-fullscreen";
+    };
+
     return (
       <div className="modal fade " id={`modal-${graphCardId}`}>
-        <div className="modal-dialog modal-xl graph-card__modal">
+        <div className={`modal-dialog ${modalSize()} graph-card__modal`}>
           <div className="modal-content">
-            {modalOpen && fetched.graphCardDimensionsFetched ? (
-              renderCardContent()
-            ) : (
-              <Loader />
-            )}
+            {modalOpen && fetched.graphCardDimensionsFetched ? renderCardContent() : <Loader />}
           </div>
         </div>
       </div>
@@ -373,10 +388,7 @@ const GraphCard = (props) => {
   };
 
   return (
-    <div
-      id={graphCardId}
-      className={`col card graph-card graph-card-${graphCardId}`}
-    >
+    <div id={graphCardId} className={`col card graph-card graph-card-${graphCardId}`}>
       {renderContent()}
     </div>
   );

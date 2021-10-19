@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
 import { useParams, useHistory } from "react-router-dom";
+import { Tooltip } from "bootstrap";
+
 import { WBCountriesByRegion } from "../../WorldBank/worldBankAPIs";
 import usePrevious from "../../libs/helpers/usePrevious";
 import Slot from "../Slot";
 
 import "./GraphViews.scss";
-import { Tooltip } from "bootstrap";
 
-const GraphViews = () => {
+const GraphViews = (props) => {
+  const { isDesktopOrLaptop } = props;
   const [graphList, setGraphList] = useState([{ id: 1 }]);
   const [regionalCountries, setRegionalCountries] = useState([]);
   const [regionCountriesFetched, setRegionCountriesFetched] = useState(false);
@@ -28,6 +30,7 @@ const GraphViews = () => {
             setRegionalCountries(data[1]);
             return setRegionCountriesFetched(true);
           }
+          return data;
         })
         .catch((err) => {
           console.log(err);
@@ -37,7 +40,7 @@ const GraphViews = () => {
 
   useEffect(() => {
     const bars = Array.from(document.querySelectorAll(`[id="graph-bar"]`));
-    console.log(`garphview useEffect ${bars}`);
+
     bars.map((tooltip) => {
       return new Tooltip(tooltip, {
         trigger: "hover",
@@ -61,6 +64,7 @@ const GraphViews = () => {
       <Slot
         key={graph.id}
         id={graph.id}
+        isDesktopOrLaptop={isDesktopOrLaptop}
         graphObj={graph}
         emptySlot={{ graphList, handleAddGraph, setGraphList }}
         selectorCard={{ regionCountriesFetched, regionalCountries }}
@@ -71,10 +75,7 @@ const GraphViews = () => {
 
   return (
     <>
-      <div
-        className="row bg-transparent gy-4 gx-4"
-        style={{ height: "100%", width: "100%" }}
-      >
+      <div className="row bg-transparent gy-4 gx-4" style={{ height: "100%", width: "100%" }}>
         {renderGraphs()}
       </div>
     </>

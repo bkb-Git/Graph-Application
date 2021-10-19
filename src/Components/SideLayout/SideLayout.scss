@@ -2,7 +2,29 @@
   margin: 15px 0;
   height: calc(100% - 30px);
   margin-top: 15px !important;
-  // overflow-y: scroll;
+
+  &-header {
+    h1 {
+      position: relative;
+      left: 30%;
+      margin: 0;
+    }
+  }
+
+  &-burger-button {
+    button {
+      i {
+        color: #5902ab;
+        font-size: 2rem;
+      }
+
+      &:hover {
+        & i {
+          color: white;
+        }
+      }
+    }
+  }
 }
 
 .sidelayout__card {
@@ -36,6 +58,16 @@
         &:hover {
           background: #555;
         }
+      }
+    }
+  }
+}
+
+@media only screen and (max-width: 650px) {
+  .sidelayout {
+    &-header {
+      h1 {
+        left: 20%;
       }
     }
   }

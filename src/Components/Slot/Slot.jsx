@@ -9,7 +9,7 @@ import SelectorCard from "./SelectorCard";
 import "./Slot.scss";
 
 const Slot = (props) => {
-  const { emptySlot, selectorCard, id, graphObj } = props;
+  const { emptySlot, selectorCard, id, graphObj, isDesktopOrLaptop } = props;
   const { graphList, handleAddGraph, setGraphList } = emptySlot;
   const { regionCountriesFetched, regionalCountries } = selectorCard;
 
@@ -21,6 +21,7 @@ const Slot = (props) => {
   });
   const [fetchError, setFetchError] = useState({ fetchError: false });
 
+  // Fetch Indicators
   useEffect(() => {
     if (selectionProgress.step === 2 && !indicatorsFetched.fetched) {
       Promise.all(
@@ -52,9 +53,7 @@ const Slot = (props) => {
 
   const handleAddGraphHere = () => {
     const modifiedGraphList = graphList;
-    const graphIndex = modifiedGraphList.findIndex(
-      (obj) => obj.id === graphObj.id
-    );
+    const graphIndex = modifiedGraphList.findIndex((obj) => obj.id === graphObj.id);
     modifiedGraphList.splice(graphIndex, 1, { ...graphObj, created: true });
 
     setGraphList([...modifiedGraphList]);
@@ -64,9 +63,7 @@ const Slot = (props) => {
 
   const handleDeleteSlot = () => {
     const modifiedGraphList = graphList;
-    const graphIndex = modifiedGraphList.findIndex(
-      (obj) => obj.id === graphObj.id
-    );
+    const graphIndex = modifiedGraphList.findIndex((obj) => obj.id === graphObj.id);
     modifiedGraphList.splice(graphIndex, 1, { id: graphObj.id });
 
     if (
@@ -80,8 +77,8 @@ const Slot = (props) => {
     setSelectionProgress({ step: 0 });
   };
 
-  const handleSelect = (props) => {
-    const { selectedItem, type } = props;
+  const handleSelect = (values) => {
+    const { selectedItem, type } = values;
     const { item, indicatorTitle, indicatorUnit } = selectedItem;
 
     if (type === Country) {
@@ -107,11 +104,10 @@ const Slot = (props) => {
     return setSelectionProgress((prev) => ({ step: prev.step + 1 }));
   };
 
-  const handleGoBack = () =>
-    setSelectionProgress((prev) => ({ step: prev.step - 1 }));
+  const handleGoBack = () => setSelectionProgress((prev) => ({ step: prev.step - 1 }));
 
   const renderError = () => {
-    <div class="alert alert-danger" style={{ height: "100%" }} role="alert">
+    <div className="alert alert-danger" style={{ height: "100%" }} role="alert">
       {fetchError.errorMessage}
     </div>;
   };
@@ -124,10 +120,10 @@ const Slot = (props) => {
       >
         <button
           type="button"
-          class="btn btn-outline-primary graph-card--empty__add-graph-button"
+          className="btn btn-outline-primary graph-card--empty__add-graph-button"
           onClick={handleAddGraphHere}
         >
-          <i class="bi-plus-lg"></i>
+          <i className="bi-plus-lg" />
         </button>
       </div>
     );
@@ -146,6 +142,7 @@ const Slot = (props) => {
       <GraphCard
         graphCardId={id}
         deleteCard={handleDeleteSlot}
+        isDesktopOrLaptop={isDesktopOrLaptop}
         data={graphData}
       />
     );

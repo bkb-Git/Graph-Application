@@ -170,3 +170,17 @@
     padding: 0 0 1rem 1rem;
   }
 }
+
+@media only screen and (max-width: 1224px) {
+  .graph-card {
+    min-width: calc(100% - 10px) !important;
+
+    &-empty {
+      min-width: calc(100% - 10px) !important;
+    }
+  }
+
+  .card-select-country {
+    min-width: calc(100% - 10px) !important;
+  }
+}

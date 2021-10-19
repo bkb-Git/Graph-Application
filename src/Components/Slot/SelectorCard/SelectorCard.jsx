@@ -1,21 +1,8 @@
-import {
-  BarChartStr,
-  Chart,
-  Country,
-  Indicator,
-  LineChartStr,
-} from "../../../Constants/keywords";
+import { BarChartStr, Chart, Country, Indicator, LineChartStr } from "../../../Constants/keywords";
 import Loader from "../../Loader";
 
 const SelectorCard = (props) => {
-  const {
-    handleSelect,
-    region,
-    progress,
-    regionFetched,
-    indicatorsFetched,
-    handleGoBack,
-  } = props;
+  const { handleSelect, region, progress, regionFetched, indicatorsFetched, handleGoBack } = props;
   // const { gdpTotalinUSD, totalPopulation } = indicators;
 
   const progressStep = { 1: "25", 2: "50", 3: "75" };
@@ -27,6 +14,7 @@ const SelectorCard = (props) => {
           {region.map((country) => (
             <button
               key={`${country.name}-item`}
+              type="button"
               id={`list-${country.id}`}
               onClick={() =>
                 handleSelect({
@@ -53,6 +41,7 @@ const SelectorCard = (props) => {
           {indicators.map((indicator) => (
             <button
               key={indicator.id}
+              type="button"
               id={indicator.id}
               onClick={() =>
                 handleSelect({
@@ -81,6 +70,7 @@ const SelectorCard = (props) => {
       <div className="list-group">
         <button
           id="graph-selector-BarChart"
+          type="button"
           onClick={() =>
             handleSelect({
               selectedItem: { item: BarChartStr },
@@ -93,7 +83,8 @@ const SelectorCard = (props) => {
         </button>
         <button
           id="graph-selector-LineChart"
-          onClick={(e) =>
+          type="button"
+          onClick={() =>
             handleSelect({
               selectedItem: { item: LineChartStr },
               type: Chart,
@@ -110,9 +101,11 @@ const SelectorCard = (props) => {
   const renderSelector = () => {
     if (progress === 1) {
       return countrySelector();
-    } else if (progress === 2) {
+    }
+    if (progress === 2) {
       return indicatorSelector();
-    } else if (progress === 3) {
+    }
+    if (progress === 3) {
       return graphSelector();
     }
     return null;
@@ -122,15 +115,16 @@ const SelectorCard = (props) => {
     const renderProgressTitle = () => {
       if (progress === 1) {
         return "Select Country";
-      } else if (progress === 2) {
+      }
+      if (progress === 2) {
         return "Select Indicator";
       }
       return "Select Chart";
     };
     return (
-      <div class="progress">
+      <div className="progress">
         <div
-          class="progress-bar"
+          className="progress-bar"
           role="progressbar"
           style={{ width: `${progressStep[progress]}%` }}
           // eslint-disable-next-line jsx-a11y/aria-proptypes
@@ -148,11 +142,7 @@ const SelectorCard = (props) => {
     if (progress > 1) {
       return (
         <div className="button-back col-2 justify-content-lg-start">
-          <button
-            type="button"
-            onClick={handleGoBack}
-            className="btn btn-md btn-outline-primary"
-          >
+          <button type="button" onClick={handleGoBack} className="btn btn-md btn-outline-primary">
             Back
           </button>
         </div>
