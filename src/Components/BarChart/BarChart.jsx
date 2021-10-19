@@ -2,13 +2,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 import { Tooltip } from "bootstrap";
 
-import { noData } from "../../../../../Constants/keywords";
-import {
-  graphText,
-  handleTooltipTitle,
-  xAxisLabelFormat,
-  yAxisTickFormat,
-} from "../../../../../libs/helpers/graphFormatting";
+import { noData } from "../../Constants/keywords";
+import { graphText, handleTooltipTitle, xAxisLabelFormat, yAxisTickFormat } from "../../libs/helpers/graphFormatting";
 
 const BarChart = (props) => {
   const { axisLabels, graphData, id, dimensions, indicatorInfo, orderData, indicatorUnit } = props;

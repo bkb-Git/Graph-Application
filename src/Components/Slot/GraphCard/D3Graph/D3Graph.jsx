@@ -4,9 +4,9 @@ import usePrevious from "../../../../libs/helpers/usePrevious";
 import sortData from "../../../../libs/helpers/dataManipulation";
 
 import "./D3Graph.scss";
-import BarChart from "./BarChart";
+import BarChart from "../../../BarChart";
 import Loader from "../../../Loader";
-import LineChart from "./LineChart";
+import LineChart from "../../../LineChart";
 import { BarChartStr } from "../../../../Constants/keywords";
 
 const D3Graph = (props) => {

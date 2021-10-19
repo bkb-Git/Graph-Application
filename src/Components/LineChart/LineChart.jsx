@@ -2,13 +2,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 
-import {
-  graphText,
-  handleTooltipTitle,
-  xAxisLabelFormat,
-  yAxisTickFormat,
-} from "../../../../../libs/helpers/graphFormatting";
-import { noData } from "../../../../../Constants/keywords";
+import { graphText, handleTooltipTitle, xAxisLabelFormat, yAxisTickFormat } from "../../libs/helpers/graphFormatting";
+import { noData } from "../../Constants/keywords";
 
 const LineChart = (props) => {
   const { axisLabels, graphData, dimensions, id, orderData, indicatorInfo, indicatorUnit } = props;
