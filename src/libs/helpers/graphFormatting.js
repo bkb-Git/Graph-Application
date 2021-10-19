@@ -8,6 +8,7 @@ import {
   gdpTotalinUSD,
   netMigration,
   populationGrowth,
+  residentPatentApplication,
   totalLabourForce,
   totalPopulation,
   totalUnemployment,
@@ -99,6 +100,8 @@ const handleTooltipTitle = (data, indicatorInfo, yValue, xAxisLabel) => {
       case totalLabourForce:
       case netMigration:
         return renderPopulationValues();
+      case residentPatentApplication:
+        return `${data[yValue]}`;
       default:
         if (data[yValue] === noData) {
           return noData;
@@ -204,6 +207,8 @@ const graphText = (indicatorInfo, graphData) => {
     case gdpAnnualGrowth:
     case annualConsumerPriceInflation:
       return "annual %";
+    case residentPatentApplication:
+      return "No. of Applicaions";
     case gdpPerCapita:
       return "current US$";
     case totalUnemployment:
