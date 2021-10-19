@@ -6,8 +6,6 @@ import { WBIndicatorById } from "../../WorldBank/worldBankAPIs";
 import GraphCard from "./GraphCard";
 import SelectorCard from "./SelectorCard";
 
-import "./Slot.scss";
-
 const Slot = (props) => {
   const { emptySlot, selectorCard, id, graphObj, isDesktopOrLaptop } = props;
   const { graphList, handleAddGraph, setGraphList } = emptySlot;
