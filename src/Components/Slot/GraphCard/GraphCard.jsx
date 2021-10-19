@@ -54,9 +54,6 @@ const GraphCard = (props) => {
           return setFetched({ dimensionsFetched: false, dataFetched: true });
         }
         return responseData;
-      })
-      .catch((error) => {
-        console.log(error);
       });
   }, [countryCode, indicator]);
 

@@ -31,9 +31,6 @@ const GraphViews = (props) => {
             return setRegionCountriesFetched(true);
           }
           return data;
-        })
-        .catch((err) => {
-          console.log(err);
         });
     }
   }, [option, history.location, prevRegionSelected]);
