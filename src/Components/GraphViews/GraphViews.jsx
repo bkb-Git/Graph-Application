@@ -72,10 +72,7 @@ const GraphViews = (props) => {
 
   return (
     <>
-      <div
-        className={`row bg-transparent ${isDesktopOrLaptop ? "gy-4 gx-2" : "gy-2 gx-1"} `}
-        style={{ height: "100%", width: "100%" }}
-      >
+      <div className="row bg-transparent mt-2 ms-2 me-2" style={{ height: "100%", width: "100%" }}>
         {renderGraphs()}
       </div>
     </>
