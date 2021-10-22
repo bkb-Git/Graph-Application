@@ -34,9 +34,6 @@ const SideLayout = (props) => {
   }, [history.location, fetched, isTabletOrMobile]);
 
   const handleSelectedItem = (e, route) => {
-    // const triggeredTab = document.getElementById(e.target.id);
-    // const tab = new Tab(triggeredTab);
-    // tab.show();
     e.preventDefault();
 
     if (isTabletOrMobile) {
