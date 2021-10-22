@@ -47,7 +47,7 @@ const GraphViews = (props) => {
         title: tooltip.getAttribute("title"),
       });
     });
-  }, [graphList]);
+  }, [graphList, isDesktopOrLaptop]);
 
   const handleAddGraph = () => {
     if (graphList.length < 4) {
@@ -72,7 +72,7 @@ const GraphViews = (props) => {
 
   return (
     <>
-      <div className="row bg-transparent gy-4 gx-4" style={{ height: "100%", width: "100%" }}>
+      <div className="row bg-transparent mt-2 ms-2 me-2" style={{ height: "100%", width: "100%" }}>
         {renderGraphs()}
       </div>
     </>
