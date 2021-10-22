@@ -8,8 +8,9 @@ This application renders graphical representation of economic data from nations 
 # Technologies
 The technologies used to build this application are as follows : 
 - React 
+- Javascript
 - HTML5 
-- Sass 
+- SCSS
 - Bootstrap 
 - D3.js
 
