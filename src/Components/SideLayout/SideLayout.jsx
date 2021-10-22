@@ -1,15 +1,43 @@
 import { Offcanvas, Tab } from "bootstrap";
-import { useHistory } from "react-router-dom";
+import { useEffect } from "react";
+import { useHistory, useLocation } from "react-router-dom";
 import "./SideLayout.scss";
 
 const SideLayout = (props) => {
   const { list, fetched, isTabletOrMobile } = props;
   const history = useHistory();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (fetched) {
+      const sideListItems = Array.from(document.querySelectorAll(".list-group-item"));
+      return sideListItems.map((item) => new Tab(item));
+    }
+    return null;
+  }, [fetched, isTabletOrMobile]);
+
+  useEffect(() => {
+    const path = location.pathname;
+
+    if (fetched) {
+      if (path !== "/") {
+        const splitPath = path.split("");
+        const code = splitPath.slice(1, splitPath.length).join("");
+        return setTimeout(() => {
+          const triggeredTab = Tab.getInstance(document.getElementById(`list-${code}`));
+          return triggeredTab.show();
+        }, 100);
+      }
+      return null;
+    }
+    return null;
+  }, [history.location, fetched, isTabletOrMobile]);
 
   const handleSelectedItem = (e, route) => {
-    const triggeredTab = document.getElementById(e.target.id);
-    const tab = new Tab(triggeredTab);
-    tab.show();
+    // const triggeredTab = document.getElementById(e.target.id);
+    // const tab = new Tab(triggeredTab);
+    // tab.show();
+    e.preventDefault();
 
     if (isTabletOrMobile) {
       const offCanvas = Offcanvas.getInstance(document.querySelector(".offcanvas"));
@@ -23,15 +51,15 @@ const SideLayout = (props) => {
   const renderSelectionList = () => {
     return (
       <div className="list-group list-group-flush">
-        {list.map((option) => (
+        {list.map((listOption) => (
           <button
-            key={`${option.name}-item`}
+            key={`${listOption.name}-item`}
             type="button"
-            id={`list-${option.id}`}
-            onClick={(e) => handleSelectedItem(e, option.id)}
-            className="list-group-item list-group-item-action"
+            id={`list-${listOption.id}`}
+            onClick={(e) => handleSelectedItem(e, listOption.id)}
+            className="list-group-item side-list-item list-group-item-action"
           >
-            {option.name}
+            {listOption.name}
           </button>
         ))}
       </div>
@@ -73,7 +101,7 @@ const SideLayout = (props) => {
             </div>
 
             <div className="col-10 sidelayout-header d-flex align-items-center">
-              <h1 className="h3 text-center">Graph App</h1>
+              <h1 className="display-3 text-primary">Graph App</h1>
             </div>
           </div>
           <div

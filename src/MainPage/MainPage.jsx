@@ -22,6 +22,7 @@ const MainPage = () => {
   const isTabletOrMobile = useMediaQuery({ query: "(max-width: 1224px)" });
 
   useEffect(() => {
+    setFetched(false);
     fetch(WBRegions)
       .then((response) => response.json())
       .then((data) => {
